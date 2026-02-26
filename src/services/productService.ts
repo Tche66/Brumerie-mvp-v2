@@ -11,7 +11,8 @@ import {
   serverTimestamp,
   Timestamp,
   increment,
-  orderBy
+  orderBy,
+  arrayUnion
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { Product } from '@/types';

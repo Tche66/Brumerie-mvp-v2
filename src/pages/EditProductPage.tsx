@@ -77,7 +77,7 @@ export function EditProductPage({ product, onBack, onSuccess }: EditProductPageP
         <div>
           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Photos actuelles</p>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {product.images.map((img, i) => (
+            {(product.images || []).map((img, i) => (
               <div key={i} className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-slate-100">
                 <img src={img} alt="" className="w-full h-full object-cover"/>
                 {i === 0 && <div className="absolute bottom-0 inset-x-0 bg-green-600 text-white text-[7px] text-center font-bold py-0.5">PRINCIPALE</div>}

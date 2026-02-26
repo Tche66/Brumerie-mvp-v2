@@ -27,6 +27,7 @@ import { EditProductPage } from '@/pages/EditProductPage';
 import { OrderFlowPage } from '@/pages/OrderFlowPage';
 import { OrderStatusPage } from '@/pages/OrderStatusPage';
 import { ToastContainer } from '@/components/ToastNotification';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useToast } from '@/hooks/useToast';
 import { subscribeToNotifications } from '@/services/notificationService';
 
@@ -307,6 +308,19 @@ function AppContent() {
           <OrderStatusPage
             orderId={selectedOrderId || undefined}
             onBack={goBack}
+          />
+        )}
+        {activePage === 'dashboard' && (
+          <DashboardPage
+            onBack={goBack}
+            onUpgrade={() => navigate('verification')}
+          />
+        )}
+        {activePage === 'edit-product' && selectedEditProduct && (
+          <EditProductPage
+            product={selectedEditProduct}
+            onBack={goBack}
+            onSuccess={() => { setSelectedEditProduct(null); goBack(); }}
           />
         )}
       </main>
