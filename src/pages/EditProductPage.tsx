@@ -1,146 +1,136 @@
-// src/pages/EditProductPage.tsx — Sprint 8 : Modifier un article
 import React, { useState } from 'react';
 import { Product, CATEGORIES, NEIGHBORHOODS } from '@/types';
 import { updateProduct } from '@/services/productService';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface EditProductPageProps {
   product: Product;
   onBack: () => void;
-  onSuccess: () => void;
+  onSaved: () => void;
 }
 
-export function EditProductPage({ product, onBack, onSuccess }: EditProductPageProps) {
-  const { userProfile } = useAuth();
+export function EditProductPage({ product, onBack, onSaved }: EditProductPageProps) {
   const [title, setTitle] = useState(product.title);
   const [description, setDescription] = useState(product.description || '');
   const [price, setPrice] = useState(String(product.price));
-  const [originalPrice, setOriginalPrice] = useState(String(product.originalPrice || ''));
+  const [originalPrice, setOriginalPrice] = useState(
+    product.originalPrice ? String(product.originalPrice) : ''
+  );
   const [category, setCategory] = useState(product.category);
   const [neighborhood, setNeighborhood] = useState(product.neighborhood);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
-  const discountPct = originalPrice && price && Number(originalPrice) > Number(price)
-    ? Math.round(((Number(originalPrice) - Number(price)) / Number(originalPrice)) * 100)
-    : 0;
+  const discountPercent = (() => {
+    const op = parseFloat(originalPrice);
+    const p = parseFloat(price);
+    if (!isNaN(op) && !isNaN(p) && op > p && op > 0) {
+      return Math.round(((op - p) / op) * 100);
+    }
+    return null;
+  })();
 
   const handleSave = async () => {
-    if (!title.trim()) { setError('Le titre est requis.'); return; }
-    if (!price || isNaN(Number(price)) || Number(price) <= 0) { setError('Prix invalide.'); return; }
-    if (product.sellerId !== userProfile?.id) { setError('Non autorisé.'); return; }
+    setError('');
+    const priceNum = parseInt(price.replace(/\s/g, ''), 10);
+    if (!title.trim()) { setError('Le titre est obligatoire.'); return; }
+    if (isNaN(priceNum) || priceNum <= 0) { setError('Prix invalide.'); return; }
 
-    setLoading(true); setError('');
+    const opNum = originalPrice.trim() ? parseInt(originalPrice.replace(/\s/g, ''), 10) : null;
+    if (opNum !== null && opNum <= priceNum) {
+      setError("L'ancien prix doit être supérieur au prix actuel.");
+      return;
+    }
+
+    setLoading(true);
     try {
       await updateProduct(product.id, {
         title: title.trim(),
         description: description.trim(),
-        price: parseFloat(price),
-        originalPrice: originalPrice && Number(originalPrice) > Number(price)
-          ? parseFloat(originalPrice) : undefined,
+        price: priceNum,
+        originalPrice: opNum ?? undefined,
         category,
         neighborhood,
       });
-      setSuccess(true);
-      setTimeout(() => onSuccess(), 1200);
-    } catch (e: any) {
-      setError(e.message || 'Erreur lors de la modification.');
-    } finally { setLoading(false); }
+      onSaved();
+    } catch (e) {
+      setError('Erreur lors de la mise à jour. Réessaie.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (success) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center px-10">
-        <p className="text-5xl mb-4">✅</p>
-        <p className="font-black text-slate-900 text-xl uppercase">Article mis à jour !</p>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-white pb-32 font-sans">
+    <div className="min-h-screen bg-slate-50 pb-32 font-sans">
       {/* Header */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-slate-100 z-50 px-5 py-5 flex items-center gap-4">
-        <button onClick={onBack} className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 active:scale-90 transition-all">
+      <div className="bg-white/90 backdrop-blur-md sticky top-0 z-50 px-6 py-5 flex items-center gap-4 border-b border-slate-100">
+        <button onClick={onBack} className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 active:scale-90 transition-all">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="#0F0F0F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </button>
-        <div>
-          <h1 className="font-black text-sm uppercase tracking-widest text-slate-900">Modifier l'article</h1>
-          <p className="text-[9px] text-slate-400 font-bold mt-0.5 truncate max-w-[200px]">{product.title}</p>
-        </div>
+        <h1 className="font-black text-xs uppercase tracking-[0.2em] text-slate-900">Modifier l'article</h1>
       </div>
 
-      <div className="px-5 pt-6 space-y-6">
-
-        {/* Aperçu photos (non modifiables pour MVP) */}
-        <div>
-          <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Photos actuelles</p>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {(product.images || []).map((img, i) => (
-              <div key={i} className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-slate-100">
-                <img src={img} alt="" className="w-full h-full object-cover"/>
-                {i === 0 && <div className="absolute bottom-0 inset-x-0 bg-green-600 text-white text-[7px] text-center font-bold py-0.5">PRINCIPALE</div>}
-              </div>
-            ))}
+      <div className="px-6 py-8 space-y-5">
+        {/* Preview image */}
+        {product.images[0] && (
+          <div className="w-full h-48 rounded-3xl overflow-hidden bg-slate-100 mb-2">
+            <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
           </div>
-          <p className="text-[9px] text-slate-400 mt-2">Pour changer les photos, supprime et recrée l'article.</p>
-        </div>
+        )}
 
         {/* Titre */}
         <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">Titre</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} maxLength={80}
-            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-base font-black text-slate-900 focus:outline-none focus:border-slate-300"/>
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block">Titre</label>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 font-bold text-slate-900 text-sm focus:outline-none focus:border-green-500 transition-colors"
+            placeholder="Titre de l'article"
+            maxLength={80}
+          />
         </div>
 
-        {/* Description */}
+        {/* Prix actuel */}
         <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">Description</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} maxLength={500}
-            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-300 resize-none"/>
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block">Prix actuel (FCFA)</label>
+          <input
+            value={price}
+            onChange={e => setPrice(e.target.value.replace(/[^0-9]/g, ''))}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 font-black text-slate-900 text-lg focus:outline-none focus:border-green-500 transition-colors"
+            placeholder="0"
+            inputMode="numeric"
+          />
         </div>
 
-        {/* Prix */}
+        {/* Ancien prix (réduction) */}
         <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">Prix actuel (FCFA)</label>
-          <input type="number" value={price} onChange={e => setPrice(e.target.value)}
-            inputMode="numeric" placeholder="Ex: 15000"
-            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-xl font-black text-slate-900 focus:outline-none focus:border-slate-300"/>
-        </div>
-
-        {/* Ancien prix */}
-        <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
-            Ancien prix — réduction (optionnel)
-          </label>
-          <div className="relative">
-            <input type="number" value={originalPrice} onChange={e => setOriginalPrice(e.target.value)}
-              inputMode="numeric" placeholder="Ex: 20000"
-              className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-xl font-black text-slate-900 focus:outline-none focus:border-slate-300"/>
-            {discountPct > 0 && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                <span className="bg-red-500 text-white font-black text-[11px] px-2.5 py-1 rounded-xl">-{discountPct}%</span>
-              </div>
-            )}
-          </div>
-          {discountPct > 0 && (
-            <p className="text-[10px] text-green-600 font-bold mt-2">
-              ✓ Réduction de {discountPct}% affichée sur l'article
-            </p>
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-1 block">Ancien prix (facultatif — pour afficher une réduction)</label>
+          <input
+            value={originalPrice}
+            onChange={e => setOriginalPrice(e.target.value.replace(/[^0-9]/g, ''))}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 font-bold text-slate-600 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+            placeholder="Ex: 25000"
+            inputMode="numeric"
+          />
+          {discountPercent !== null && (
+            <div className="mt-2 flex items-center gap-2">
+              <span className="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1.5 rounded-xl uppercase">-{discountPercent}%</span>
+              <span className="text-[10px] text-slate-400 font-bold">Sera affiché comme réduction</span>
+            </div>
           )}
         </div>
 
         {/* Catégorie */}
         <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-3">Catégorie</label>
-          <div className="grid grid-cols-2 gap-2">
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block">Catégorie</label>
+          <div className="grid grid-cols-3 gap-2">
             {CATEGORIES.map(cat => (
               <button key={cat.id} onClick={() => setCategory(cat.id)}
-                className={`py-3 px-4 rounded-2xl text-[11px] font-bold flex items-center gap-2 transition-all border ${
-                  category === cat.id ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-600 border-slate-100'
+                className={`py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                  category === cat.id
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-200'
                 }`}>
-                <span>{cat.icon}</span><span>{cat.label}</span>
+                {cat.icon} {cat.label}
               </button>
             ))}
           </div>
@@ -148,42 +138,57 @@ export function EditProductPage({ product, onBack, onSuccess }: EditProductPageP
 
         {/* Quartier */}
         <div>
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-3">Quartier</label>
-          <div className="flex flex-wrap gap-2">
-            {NEIGHBORHOODS.slice(0, 20).map(n => (
-              <button key={n} onClick={() => setNeighborhood(n)}
-                className={`py-2 px-3 rounded-xl text-[10px] font-bold transition-all border ${
-                  neighborhood === n ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-600 border-slate-100'
-                }`}>
-                {n}
-              </button>
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block">Quartier</label>
+          <select
+            value={neighborhood}
+            onChange={e => setNeighborhood(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 font-bold text-slate-900 text-sm focus:outline-none focus:border-green-500 transition-colors appearance-none"
+          >
+            {NEIGHBORHOODS.map(n => (
+              <option key={n} value={n}>{n}</option>
             ))}
-          </div>
+          </select>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block">Description</label>
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={5}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-4 font-medium text-slate-700 text-sm focus:outline-none focus:border-green-500 transition-colors resize-none"
+            placeholder="Décris ton article..."
+            maxLength={800}
+          />
+          <p className="text-[9px] text-slate-300 font-bold text-right mt-1">{description.length}/800</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <p className="text-red-600 text-[12px] font-bold">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+            <p className="text-[11px] font-bold text-red-600">{error}</p>
           </div>
         )}
       </div>
 
-      {/* Footer fixe */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 p-4 z-50">
-        <div className="flex gap-3">
-          <button onClick={onBack}
-            className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all">
-            Annuler
-          </button>
-          <button onClick={handleSave} disabled={loading}
-            className="flex-[2] py-4 rounded-2xl text-white font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg,#16A34A,#115E2E)' }}>
-            {loading
-              ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-              : '✓ Enregistrer les modifications'
-            }
-          </button>
-        </div>
+      {/* CTA fixe */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 z-50 p-4">
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="w-full py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-xl shadow-green-200 active:scale-95 transition-all disabled:opacity-60"
+          style={{ background: 'linear-gradient(135deg,#16A34A,#115E2E)' }}
+        >
+          {loading
+            ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"/>
+            : <>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v14a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Enregistrer les modifications
+              </>
+          }
+        </button>
       </div>
     </div>
   );

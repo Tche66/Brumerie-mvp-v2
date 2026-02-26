@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { PLAN_LIMITS } from '@/types';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Conversation, Message } from '@/types';
 import { createNotification } from './notificationService';
 import { showLocalPushNotification } from './pushService';

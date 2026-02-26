@@ -11,8 +11,7 @@ import {
   serverTimestamp,
   Timestamp,
   increment,
-  orderBy,
-  arrayUnion
+  orderBy
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { Product } from '@/types';
@@ -212,23 +211,37 @@ export function sendFeedbackViaEmail(feedback: { type: string; message: string; 
 /**
  * Remettre un produit vendu sur le marché (Re-listing)
  */
-export async function updateProduct(productId: string, updates: {
-  title?: string; description?: string; price?: number; originalPrice?: number;
-  category?: string; neighborhood?: string;
-}): Promise<void> {
-  const data: Record<string, any> = { ...updates };
-  // Enregistrer dans priceHistory si prix modifié
-  if (updates.price !== undefined) {
-    data.priceHistory = arrayUnion({ price: updates.price, date: new Date().toISOString() });
-  }
-  await updateDoc(doc(db, 'products', productId), data);
-}
-
 export async function updateProductStatus(productId: string, status: 'active' | 'sold'): Promise<void> {
   try {
     await updateDoc(doc(db, 'products', productId), { status });
   } catch (error) {
     console.error('Erreur updateProductStatus:', error);
+    throw error;
+  }
+}
+
+/**
+ * Modifier les détails d'un article (titre, prix, description, originalPrice)
+ */
+export async function updateProduct(
+  productId: string,
+  data: {
+    title?: string;
+    description?: string;
+    price?: number;
+    originalPrice?: number | null;
+    category?: string;
+    neighborhood?: string;
+    neighborhoods?: string[];
+  }
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, 'products', productId), {
+      ...data,
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.error('Erreur updateProduct:', error);
     throw error;
   }
 }

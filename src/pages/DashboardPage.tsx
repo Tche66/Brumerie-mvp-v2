@@ -5,9 +5,9 @@ import { getSellerProducts } from '@/services/productService';
 import { subscribeSellerReviews } from '@/services/reviewService';
 import { Product, PLAN_LIMITS } from '@/types';
 
-interface DashboardPageProps { onBack: () => void; onUpgrade: () => void; }
+interface DashboardPageProps { onBack: () => void; onUpgrade?: () => void; onEditProduct?: (product: Product) => void; }
 
-export function DashboardPage({ onBack, onUpgrade }: DashboardPageProps) {
+export function DashboardPage({ onBack, onUpgrade, onEditProduct }: DashboardPageProps) {
   const { userProfile } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [avgRating, setAvgRating] = useState(0);
@@ -134,6 +134,14 @@ export function DashboardPage({ onBack, onUpgrade }: DashboardPageProps) {
                   <span className={`text-[9px] font-black px-2 py-1 rounded-lg ${p.status === 'sold' ? 'bg-slate-100 text-slate-400' : 'bg-green-100 text-green-700'}`}>
                     {p.status === 'sold' ? 'Vendu' : 'Actif'}
                   </span>
+                  {onEditProduct && p.status !== 'sold' && (
+                    <button onClick={() => onEditProduct(p)}
+                      className="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 active:scale-90 transition-all flex-shrink-0" title="Modifier">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

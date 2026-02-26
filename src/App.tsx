@@ -27,7 +27,6 @@ import { EditProductPage } from '@/pages/EditProductPage';
 import { OrderFlowPage } from '@/pages/OrderFlowPage';
 import { OrderStatusPage } from '@/pages/OrderStatusPage';
 import { ToastContainer } from '@/components/ToastNotification';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useToast } from '@/hooks/useToast';
 import { subscribeToNotifications } from '@/services/notificationService';
 
@@ -103,9 +102,9 @@ function AppContent() {
   const { currentUser, userProfile } = useAuth();
   const [activePage, setActivePage] = useState<Page>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedEditProduct, setSelectedEditProduct] = useState<Product | null>(null);
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [orderFlowProduct, setOrderFlowProduct] = useState<any>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [navigationHistory, setNavigationHistory] = useState<Page[]>(['home']);
@@ -115,15 +114,6 @@ function AppContent() {
   const prevNotifsRef = React.useRef<Set<string>>(new Set());
 
   useEffect(() => { window.scrollTo(0, 0); }, [activePage, selectedProduct]);
-
-  // Mode sombre — appliqué au document selon préférence utilisateur
-  useEffect(() => {
-    if (userProfile?.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [userProfile?.darkMode]);
 
   // Abonnement total messages non-lus → badge BottomNav
   useEffect(() => {
@@ -256,12 +246,7 @@ function AppContent() {
           <BuyerProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate} />
         )}
         {activePage === 'profile' && !isBuyer && (
-          <ProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate}
-            onEditProduct={(product) => {
-              setSelectedEditProduct(product);
-              navigate('edit-product');
-            }}
-          />
+          <ProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate} />
         )}
         {activePage === 'messages' && (
           <ConversationsListPage onOpenConversation={handleOpenConversation} />
@@ -278,6 +263,12 @@ function AppContent() {
         {activePage === 'about' && <PrivacyPage onBack={goBack} isAbout />}
         {activePage === 'shop-customize' && (
           <ShopCustomizePage onBack={goBack} onSaved={goBack} />
+        )}
+        {activePage === 'dashboard' && (
+          <DashboardPage
+            onBack={goBack}
+            onEditProduct={(product: Product) => { setProductToEdit(product); navigate('edit-product'); }}
+          />
         )}
         {activePage === 'sell' && !isBuyer && (
           <SellPage onClose={() => handleBottomNavNavigate('home')} onSuccess={() => handleBottomNavNavigate('home')} />
@@ -304,23 +295,17 @@ function AppContent() {
             }}
           />
         )}
+        {activePage === 'edit-product' && productToEdit && (
+          <EditProductPage
+            product={productToEdit}
+            onBack={goBack}
+            onSaved={() => { setProductToEdit(null); goBack(); }}
+          />
+        )}
         {activePage === 'order-status' && (
           <OrderStatusPage
             orderId={selectedOrderId || undefined}
             onBack={goBack}
-          />
-        )}
-        {activePage === 'dashboard' && (
-          <DashboardPage
-            onBack={goBack}
-            onUpgrade={() => navigate('verification')}
-          />
-        )}
-        {activePage === 'edit-product' && selectedEditProduct && (
-          <EditProductPage
-            product={selectedEditProduct}
-            onBack={goBack}
-            onSuccess={() => { setSelectedEditProduct(null); goBack(); }}
           />
         )}
       </main>

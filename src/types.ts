@@ -90,6 +90,7 @@ export interface Product {
   title: string;
   description: string;
   price: number;
+  originalPrice?: number;   // Prix avant réduction (optionnel)
   category: string;
   neighborhood: string;
   neighborhoods?: string[];

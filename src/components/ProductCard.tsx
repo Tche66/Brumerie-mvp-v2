@@ -109,8 +109,24 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
 
       {/* Content */}
       <div className="p-4">
-        {/* Prix avec réduction éventuelle */}
-        <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="sm" />
+        {/* Prix - Font Syne unique Brumerie */}
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <p className="price-brumerie text-[18px] text-gray-900">
+            {product.price.toLocaleString('fr-FR')}
+          </p>
+          <span className="text-[10px] font-bold text-slate-400 ml-0.5">FCFA</span>
+          {product.originalPrice && product.originalPrice > product.price && (() => {
+            const pct = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+            return (
+              <span className="bg-red-100 text-red-600 text-[8px] font-black px-1.5 py-0.5 rounded-lg">-{pct}%</span>
+            );
+          })()}
+        </div>
+        {product.originalPrice && product.originalPrice > product.price && (
+          <p className="text-[9px] text-slate-400 line-through font-bold">
+            {product.originalPrice.toLocaleString('fr-FR')} FCFA
+          </p>
+        )}
 
         {/* Titre */}
         <h3 className="text-[11px] font-bold text-gray-500 mt-1 line-clamp-1 uppercase tracking-tight">

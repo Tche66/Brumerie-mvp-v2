@@ -95,6 +95,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
       await createProduct({
         title: title.trim(),
         price: parseFloat(price),
+        originalPrice: originalPrice.trim() && parseFloat(originalPrice) > parseFloat(price) ? parseFloat(originalPrice) : undefined,
         description: description.trim(),
         category,
         neighborhood: selectedCities[0], // principal pour compatibilité
@@ -222,6 +223,11 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
               <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block mb-2">Prix (FCFA)</label>
               <input type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)}
                 className="w-full px-5 py-5 bg-slate-50 rounded-2xl text-lg border-2 border-transparent focus:border-green-600 focus:bg-white outline-none transition-all font-bold text-green-700" />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block mb-2">Ancien prix — optionnel <span className="text-amber-500">🏷️ Affiche une réduction</span></label>
+              <input type="number" placeholder="Ex: 25000 (si tu fais une promo)" value={originalPrice} onChange={e => setOriginalPrice(e.target.value)}
+                className="w-full px-5 py-5 bg-slate-50 rounded-2xl text-sm border-2 border-transparent focus:border-amber-400 focus:bg-white outline-none transition-all font-bold text-slate-500" />
             </div>
             <div>
               <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1 block mb-2">Description</label>
