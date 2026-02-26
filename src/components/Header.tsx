@@ -96,7 +96,13 @@ export function Header({ onProfileClick, onSearchChange, searchTerm = '', onNoti
               }
 
             </button>
-            {userProfile.isVerified && <VerifiedTag size="sm" />}
+            {/* Badge uniquement si Vérifié ou Premium — jamais Simple */}
+            {(userProfile.isVerified || (userProfile as any).isPremium) && (
+              <VerifiedTag
+                tier={(userProfile as any).isPremium ? 'premium' : 'verified'}
+                size="sm"
+              />
+            )}
             </div>
           )}
 

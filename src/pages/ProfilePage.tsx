@@ -139,12 +139,15 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
         </div>
 
         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">{userProfile.name}</h1>
-        <div className="mb-2">
-          <VerifiedTag
-            tier={userProfile.isPremium ? 'premium' : userProfile.isVerified ? 'verified' : 'simple'}
-            size="md"
-          />
-        </div>
+        {/* Badge uniquement si Vérifié ou Premium */}
+        {(userProfile.isVerified || userProfile.isPremium) && (
+          <div className="mb-2">
+            <VerifiedTag
+              tier={userProfile.isPremium ? 'premium' : 'verified'}
+              size="md"
+            />
+          </div>
+        )}
         {/* Étoiles résumé */}
         {(userProfile.rating && userProfile.reviewCount) ? (
           <div className="flex items-center gap-1.5 mb-3">

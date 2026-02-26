@@ -168,21 +168,33 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
                 </div>
               ))}
               {images.length < 5 && (
-                <div onClick={() => galleryRef.current?.click()}
+                <div onClick={() => (userProfile?.isVerified || userProfile?.isPremium) ? galleryRef.current?.click() : cameraRef.current?.click()}
                   className="aspect-[4/5] rounded-[1.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 bg-slate-50 active:scale-95 transition-all cursor-pointer">
                   <span className="text-slate-300 text-3xl font-light">+</span>
                   <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest">Ajouter</span>
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => galleryRef.current?.click()} className="flex-1 flex items-center justify-center gap-3 py-5 bg-slate-900 text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest active:scale-95">
-                <Icon name="gallery" /> Galerie
-              </button>
-              <button onClick={() => cameraRef.current?.click()} className="flex-1 flex items-center justify-center gap-3 py-5 bg-slate-50 text-slate-900 rounded-[2rem] font-bold text-xs uppercase tracking-widest border border-slate-100 active:scale-95">
-                <Icon name="camera" /> Caméra
-              </button>
-            </div>
+            {/* Vendeur Simple = caméra uniquement | Vérifié/Premium = galerie + caméra */}
+            {(userProfile?.isVerified || userProfile?.isPremium) ? (
+              <div className="flex gap-3">
+                <button onClick={() => galleryRef.current?.click()} className="flex-1 flex items-center justify-center gap-3 py-5 bg-slate-900 text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest active:scale-95">
+                  <Icon name="gallery" /> Galerie
+                </button>
+                <button onClick={() => cameraRef.current?.click()} className="flex-1 flex items-center justify-center gap-3 py-5 bg-slate-50 text-slate-900 rounded-[2rem] font-bold text-xs uppercase tracking-widest border border-slate-100 active:scale-95">
+                  <Icon name="camera" /> Caméra
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <button onClick={() => cameraRef.current?.click()} className="w-full flex items-center justify-center gap-3 py-5 bg-slate-900 text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest active:scale-95">
+                  <Icon name="camera" /> Prendre une photo
+                </button>
+                <p className="text-center text-[9px] text-slate-400 font-bold">
+                  📸 Photos réelles uniquement · <span className="text-blue-500">Devenir Vérifié via Paramètres</span> pour accéder à la galerie
+                </p>
+              </div>
+            )}
             <input ref={galleryRef} type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleImageChange} className="hidden" />
           </div>
