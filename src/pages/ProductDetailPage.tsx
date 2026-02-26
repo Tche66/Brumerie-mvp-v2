@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Product } from '@/types';
 import { CATEGORIES } from '@/types';
 import { generateWhatsAppLink, formatPrice, formatRelativeDate } from '@/utils/helpers';
-import { incrementWhatsAppClick, getProducts, incrementViewCount } from '@/services/productService';
+import { incrementWhatsAppClick, getProducts, incrementViewCount, incrementContactCount } from '@/services/productService';
 import { addBookmark, removeBookmark } from '@/services/bookmarkService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageLightbox } from '@/components/ImageLightbox';
@@ -43,9 +43,11 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
 
   const categoryLabel = CATEGORIES.find(c => c.id === product.category)?.label || product.category;
 
-  // Incrémenter les vues à l'ouverture (une seule fois)
+  // Incrémenter les vues à l'ouverture — SEULEMENT si ce n'est pas le vendeur lui-même
   useEffect(() => {
-    if (product.id) incrementViewCount(product.id);
+    if (product.id && currentUser && currentUser.uid !== product.sellerId) {
+      incrementViewCount(product.id);
+    }
   }, [product.id]);
 
   // Bookmark sync
@@ -87,6 +89,8 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
         { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || '', neighborhood: product.neighborhood },
         userProfile.name, product.sellerName, userProfile.photoURL, product.sellerPhoto,
       );
+      // ✅ Comptabiliser le contact via le messenger (pas WhatsApp)
+      await incrementContactCount(product.id, product.sellerId);
       onStartChat?.(convId);
     } catch (e) { console.error('[Chat]', e); }
     finally { setStartingChat(false); }
@@ -271,7 +275,7 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
         <div className="grid grid-cols-3 gap-3 mb-8">
           <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
             <p className="text-xl font-black text-slate-900">{product.whatsappClickCount || 0}</p>
-            <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Intérêts</p>
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Contacts</p>
           </div>
           <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
             <p className="text-xl font-black text-slate-900">{product.viewCount || 0}</p>
