@@ -96,9 +96,12 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
                   {seller.shopSlogan}
                 </p>
               )}
-              {seller.isVerified && (
-                <div className="mb-2"><VerifiedTag size="lg" /></div>
-              )}
+              <div className="mb-2">
+                <VerifiedTag
+                  tier={(seller as any).isPremium ? 'premium' : seller.isVerified ? 'verified' : 'simple'}
+                  size="lg"
+                />
+              </div>
 
               <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-3 flex-wrap justify-center">
                 {seller.neighborhood && (

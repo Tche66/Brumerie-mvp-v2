@@ -40,6 +40,15 @@ export const MOBILE_PAYMENT_METHODS = [
 ];
 
 export const BRUMERIE_FEE_PERCENT = 0; // MVP — pas de commission
+export const VERIFICATION_PRICE = 2000; // FCFA/mois — badge VÉRIFIÉ
+export const PREMIUM_PRICE = 5000;      // FCFA/mois — badge PREMIUM (futur)
+
+// Limites par plan
+export const PLAN_LIMITS = {
+  simple:   { products: 5,  dailyChats: 5,  boost: 0   },
+  verified: { products: 20, dailyChats: 999, boost: 20  },
+  premium:  { products: 999, dailyChats: 999, boost: 100 },
+} as const;
 
 // ─── USER ─────────────────────────────────────────────────
 export interface User {
@@ -52,6 +61,11 @@ export interface User {
   photoURL?: string;
   role: 'buyer' | 'seller';
   isVerified?: boolean;
+  isPremium?: boolean;
+  tier?: 'simple' | 'verified' | 'premium';   // Plan actuel du vendeur
+  dailyChatCount?: number;    // Compteur chats du jour (reset à minuit)
+  lastChatReset?: string;     // Date ISO du dernier reset
+  productCount?: number;      // Nb d'articles actifs (pour limite)
   hasPhysicalShop?: boolean;
   managesDelivery?: boolean;
   bio?: string;
@@ -86,6 +100,7 @@ export interface Product {
   sellerPhone?: string;
   sellerPhoto?: string;
   sellerVerified?: boolean;
+  sellerPremium?: boolean;
   status: ProductStatus;
   whatsappClickCount?: number;
   bookmarkCount?: number;

@@ -136,7 +136,11 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
             </div>
             <div className="flex items-center gap-1 min-w-0">
               <span className="text-[10px] font-black text-gray-800 truncate">{product.sellerName}</span>
-              {product.sellerVerified && <VerifiedTag size="sm" />}
+              {/* Badge tier vendeur */}
+              <VerifiedTag
+                tier={product.sellerPremium ? 'premium' : product.sellerVerified ? 'verified' : 'simple'}
+                size="sm"
+              />
             </div>
           </div>
 

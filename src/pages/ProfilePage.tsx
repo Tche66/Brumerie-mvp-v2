@@ -128,9 +128,12 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
         </div>
 
         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">{userProfile.name}</h1>
-        {userProfile.isVerified && (
-          <div className="mb-2"><VerifiedTag size="md" /></div>
-        )}
+        <div className="mb-2">
+          <VerifiedTag
+            tier={userProfile.isPremium ? 'premium' : userProfile.isVerified ? 'verified' : 'simple'}
+            size="md"
+          />
+        </div>
         {memberSince && <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-3">Membre depuis {memberSince}</p>}
 
         {/* Badges boutique/livraison */}
