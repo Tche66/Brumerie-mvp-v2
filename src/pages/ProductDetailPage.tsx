@@ -11,6 +11,8 @@ import { getOrCreateConversation, checkChatLimit } from '@/services/messagingSer
 import { subscribeSellerReviews } from '@/services/reviewService';
 import { Review } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -39,11 +41,26 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportSent, setReportSent] = useState(false);
+  // Compteurs temps réel (mis à jour automatiquement depuis Firestore)
+  const [liveViewCount, setLiveViewCount] = useState(product.viewCount || 0);
+  const [liveContactCount, setLiveContactCount] = useState(product.whatsappClickCount || 0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const categoryLabel = CATEGORIES.find(c => c.id === product.category)?.label || product.category;
 
-  // Incrémenter les vues à l'ouverture — SEULEMENT si ce n'est pas le vendeur lui-même
+  // ── Abonnement temps réel aux compteurs du produit ──────
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'products', product.id), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setLiveViewCount(data.viewCount || 0);
+        setLiveContactCount(data.whatsappClickCount || 0);
+      }
+    });
+    return unsub;
+  }, [product.id]);
+
+  // ── Incrémenter les vues — SEULEMENT les visiteurs (pas le vendeur) ──
   useEffect(() => {
     if (product.id && currentUser && currentUser.uid !== product.sellerId) {
       incrementViewCount(product.id);
@@ -274,11 +291,11 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mb-8">
           <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
-            <p className="text-xl font-black text-slate-900">{product.whatsappClickCount || 0}</p>
+            <p className="text-xl font-black text-slate-900">{liveContactCount}</p>
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Contacts</p>
           </div>
           <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
-            <p className="text-xl font-black text-slate-900">{product.viewCount || 0}</p>
+            <p className="text-xl font-black text-slate-900">{liveViewCount}</p>
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Vues</p>
           </div>
           <div className="bg-white rounded-2xl p-4 text-center border border-slate-100 shadow-sm">

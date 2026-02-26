@@ -34,8 +34,15 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isSignedIn() && 
                        request.resource.data.sellerId == request.auth.uid;
-      allow update, delete: if isSignedIn() && 
-                               resource.data.sellerId == request.auth.uid;
+      // Le vendeur peut tout modifier
+      allow update: if isSignedIn() && resource.data.sellerId == request.auth.uid;
+      // N'importe quel utilisateur connecté peut incrémenter viewCount ou whatsappClickCount
+      // (compteurs de vues et contacts — champs en lecture seule pour le vendeur)
+      allow update: if isSignedIn() &&
+                       request.auth.uid != resource.data.sellerId &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['viewCount', 'whatsappClickCount']);
+      allow delete: if isSignedIn() && resource.data.sellerId == request.auth.uid;
     }
     
     // ── Conversations ──────────────────────────────────────

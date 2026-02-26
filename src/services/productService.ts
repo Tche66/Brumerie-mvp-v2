@@ -168,7 +168,9 @@ export async function incrementWhatsAppClick(productId: string): Promise<void> {
 export async function incrementViewCount(productId: string): Promise<void> {
   try {
     await updateDoc(doc(db, 'products', productId), { viewCount: increment(1) });
-  } catch(e) { /* silencieux */ }
+  } catch(e) {
+    console.error('[incrementViewCount] Firestore refusé — vérifier les règles Firestore :', e);
+  }
 }
 
 // Sprint 5 — compteur de contacts (remplace WhatsApp click)
