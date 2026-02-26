@@ -368,6 +368,7 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
           productImage={order.productImage}
           fromUserId={currentUser.uid}
           fromUserName={order.buyerName}
+          fromUserPhoto={order.buyerPhoto || undefined}
           toUserId={order.sellerId}
           toUserName={order.sellerName}
           role="buyer_to_seller"

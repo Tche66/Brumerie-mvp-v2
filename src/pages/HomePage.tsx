@@ -13,7 +13,7 @@ interface HomePageProps {
   onNotificationsClick?: () => void;
 }
 
-const ALL_CATEGORIES = [{ id: 'all', name: 'Tout', icon: null }, ...CATEGORIES];
+const ALL_CATEGORIES = [{ id: 'all', label: 'Tout catégorie', icon: '🏷️' }, ...CATEGORIES];
 
 const TrustBadges = () => (
   <div className="flex gap-2 mt-5 flex-wrap">
@@ -117,7 +117,7 @@ export function HomePage({ onProductClick, onProfileClick, onNotificationsClick 
       {/* Catégories */}
       <div className="mt-8">
         <div className="px-6 mb-4">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Rayons</h3>
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Catégories</h3>
         </div>
         <div className="flex gap-3 overflow-x-auto px-5 pb-4 scrollbar-hide">
           {ALL_CATEGORIES.map((cat) => {

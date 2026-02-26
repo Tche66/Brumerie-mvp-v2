@@ -217,7 +217,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
 
             {/* Catégories */}
             <div>
-              <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest block mb-3">1. Choisir le rayon</label>
+              <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest block mb-3">1. Choisir la catégorie</label>
               <div className="grid grid-cols-2 gap-2.5 bg-slate-50 p-4 rounded-[2rem]">
                 {CATEGORIES.map(cat => (
                   <button key={cat.id} onClick={() => setCategory(cat.id)}

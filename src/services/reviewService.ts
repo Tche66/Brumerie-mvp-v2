@@ -20,7 +20,23 @@ export async function submitReview(params: {
   ));
   if (!existing.empty) throw new Error('Vous avez déjà noté cette commande.');
 
-  await addDoc(reviewsCol, { ...params, createdAt: serverTimestamp() });
+  // Nettoyer undefined — Firestore rejette les valeurs undefined
+  const reviewData: Record<string, any> = {
+    orderId: params.orderId,
+    productId: params.productId,
+    productTitle: params.productTitle,
+    fromUserId: params.fromUserId,
+    fromUserName: params.fromUserName,
+    toUserId: params.toUserId,
+    role: params.role,
+    rating: params.rating,
+    comment: params.comment,
+    createdAt: serverTimestamp(),
+  };
+  // N'ajouter fromUserPhoto que si défini
+  if (params.fromUserPhoto) reviewData.fromUserPhoto = params.fromUserPhoto;
+
+  await addDoc(reviewsCol, reviewData);
 
   // Mettre à jour la moyenne du profil noté (vendeur uniquement pour MVP)
   if (params.role === 'buyer_to_seller') {

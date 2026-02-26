@@ -1,66 +1,113 @@
-# Règles Firestore — À appliquer dans Firebase Console
-
-Aller sur : https://console.firebase.google.com
-→ Firestore Database → Règles
-
-Remplacer par :
+# Règles Firestore — À copier dans Firebase Console
+# Firebase Console → Firestore Database → Règles → Publier
 
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users — lecture publique, écriture si propriétaire
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isParticipant(conversationId) {
+      return isSignedIn() && 
+             request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+    }
+    
+    // ── Users ──────────────────────────────────────────────
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && 
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['subscription', 'isVerified', 'verificationStatus', 'publicationLimits']);
+      allow delete: if false;
     }
-
-    // Produits — lecture publique, écriture si vendeur propriétaire
+    
+    // ── Products ───────────────────────────────────────────
     match /products/{productId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null &&
-        (request.auth.uid == resource.data.sellerId ||
-         request.resource.data.keys().hasOnly(['status', 'whatsappClickCount', 'bookmarkCount']));
+      allow create: if isSignedIn() && 
+                       request.resource.data.sellerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && 
+                               resource.data.sellerId == request.auth.uid;
     }
-
-    // Commandes — lecture/écriture si acheteur ou vendeur concerné
+    
+    // ── Conversations ──────────────────────────────────────
+    match /conversations/{conversationId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid in resource.data.participants
+      );
+      allow create: if isSignedIn() && 
+                       request.auth.uid in request.resource.data.participants &&
+                       request.resource.data.participants.size() == 2;
+      allow update: if isSignedIn() && 
+                       request.auth.uid in resource.data.participants;
+      allow delete: if false;
+      
+      // ── Messages (sous-collection) ──────────────────────
+      match /messages/{messageId} {
+        allow read: if isParticipant(conversationId);
+        allow create: if isSignedIn() && (
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        );
+        allow update: if isParticipant(conversationId);
+        allow delete: if false;
+      }
+    }
+    
+    // ── Orders ─────────────────────────────────────────────
     match /orders/{orderId} {
-      allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.buyerId ||
-         request.auth.uid == resource.data.sellerId);
-      allow create: if request.auth != null;
-      allow update: if request.auth != null &&
-        (request.auth.uid == resource.data.buyerId ||
-         request.auth.uid == resource.data.sellerId);
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.buyerId || 
+        request.auth.uid == resource.data.sellerId
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.buyerId || 
+        request.auth.uid == resource.data.sellerId
+      );
+      allow delete: if false;
     }
-
-    // Avis / Notations — ⚠️ CORRECTION : permettre écriture aux utilisateurs authentifiés
+    
+    // ── Reviews / Avis ─────────────────────────────────────
+    // ⚠️ NOUVEAU — corrige l'erreur "Missing or insufficient permissions"
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null &&
-        request.auth.uid == resource.data.fromUserId;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && 
+                               request.auth.uid == resource.data.fromUserId;
     }
-
-    // Conversations — lecture/écriture si participant
-    match /conversations/{convId} {
-      allow read, write: if request.auth != null &&
-        request.auth.uid in resource.data.participants;
-      allow create: if request.auth != null;
-    }
-
-    // Messages — lecture/écriture si participant de la conversation
-    match /conversations/{convId}/messages/{msgId} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Notifications — lecture/écriture pour l'utilisateur concerné
+    
+    // ── Notifications ──────────────────────────────────────
+    // Chemin plat : /notifications/{notifId}  (utilisé par le code app)
     match /notifications/{notifId} {
-      allow read, write: if request.auth != null &&
-        request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null;
+      allow read, update, delete: if isSignedIn() && 
+                                     request.auth.uid == resource.data.userId;
+      allow create: if isSignedIn();
+    }
+    // Chemin sous-collection (ancienne version, garde pour compat)
+    match /notifications/{userId}/items/{notifId} {
+      allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn();
+    }
+    
+    // ── Payments ───────────────────────────────────────────
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+    
+    // ── Reports ────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
     }
   }
 }

@@ -125,6 +125,7 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
         {/* Vendeur & Quartier */}
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
           <div className="flex items-center gap-2 max-w-[65%]">
+            {/* Avatar */}
             <div className="w-6 h-6 rounded-lg overflow-hidden bg-green-50 flex-shrink-0 border border-gray-100">
               {product.sellerPhoto ? (
                 <img src={product.sellerPhoto} alt={product.sellerName} className="w-full h-full object-cover" />
@@ -134,13 +135,13 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="text-[10px] font-black text-gray-800 truncate">{product.sellerName}</span>
-              {/* Badge vérifié/premium uniquement sur les cartes */}
+            {/* Nom + badge sur même ligne, badge APRÈS le nom */}
+            <div className="flex items-center gap-1 min-w-0 flex-1">
+              <span className="text-[10px] font-black text-gray-800 truncate flex-shrink min-w-0">{product.sellerName}</span>
               {(product.sellerVerified || product.sellerPremium) && (
                 <VerifiedTag
                   tier={product.sellerPremium ? 'premium' : 'verified'}
-                  size="sm"
+                  size="xs"
                 />
               )}
             </div>

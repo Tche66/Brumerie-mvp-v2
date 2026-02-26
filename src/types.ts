@@ -24,10 +24,7 @@ export const CATEGORIES = [
   { id: 'furniture',   label: 'Maison',        icon: '🛋️' },
   { id: 'food',        label: 'Alimentation',  icon: '🍎' },
   { id: 'sports',      label: 'Sport',         icon: '⚽' },
-  { id: 'vehicles',    label: 'Véhicules',     icon: '🚗' },
   { id: 'babies',      label: 'Bébé & Enfant', icon: '🧸' },
-  { id: 'services',    label: 'Services',      icon: '🔧' },
-  { id: 'books',       label: 'Livres',        icon: '📚' },
   { id: 'other',       label: 'Autre',         icon: '📦' },
 ];
 
