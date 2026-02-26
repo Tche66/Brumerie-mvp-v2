@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Product } from '@/types';
 import { CATEGORIES } from '@/types';
 import { generateWhatsAppLink, formatPrice, formatRelativeDate } from '@/utils/helpers';
-import { incrementWhatsAppClick, getProducts } from '@/services/productService';
+import { incrementWhatsAppClick, getProducts, incrementViewCount } from '@/services/productService';
 import { addBookmark, removeBookmark } from '@/services/bookmarkService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ImageLightbox } from '@/components/ImageLightbox';
@@ -42,6 +42,11 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const categoryLabel = CATEGORIES.find(c => c.id === product.category)?.label || product.category;
+
+  // Incrémenter les vues à l'ouverture (une seule fois)
+  useEffect(() => {
+    if (product.id) incrementViewCount(product.id);
+  }, [product.id]);
 
   // Bookmark sync
   useEffect(() => {

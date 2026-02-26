@@ -102,6 +102,7 @@ function AppContent() {
   const { currentUser, userProfile } = useAuth();
   const [activePage, setActivePage] = useState<Page>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [productHistory, setProductHistory] = useState<Product[]>([]);
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
@@ -169,16 +170,31 @@ function AppContent() {
   const goBack = () => {
     if (navigationHistory.length > 1) {
       const h = [...navigationHistory]; h.pop();
+      const prevPage = h[h.length - 1];
+      // Si on revient sur product-detail, restaurer le produit précédent
+      if (prevPage === 'product-detail' && productHistory.length > 0) {
+        const stack = [...productHistory];
+        const prevProduct = stack.pop()!;
+        setProductHistory(stack);
+        setSelectedProduct(prevProduct);
+      }
       setNavigationHistory(h);
-      setActivePage(h[h.length - 1]);
+      setActivePage(prevPage);
     } else { setActivePage('home'); }
   };
 
-  const handleProductClick = (product: Product) => { setSelectedProduct(product); navigate('product-detail'); };
+  const handleProductClick = (product: Product) => {
+    // Empiler le produit actuel si on est déjà sur product-detail
+    if (activePage === 'product-detail' && selectedProduct) {
+      setProductHistory(prev => [...prev, selectedProduct]);
+    }
+    setSelectedProduct(product);
+    navigate('product-detail');
+  };
   const handleSellerClick = (sellerId: string) => { setSelectedSellerId(sellerId); navigate('seller-profile'); };
   const handleBottomNavNavigate = (page: string) => {
     setSelectedProduct(null); setSelectedSellerId(null); setSelectedConversation(null);
-    // 'orders' dans le BottomNav → 'order-status'
+    setProductHistory([]); // vider la pile produit
     const target = page === 'orders' ? 'order-status' : page === 'tableau' ? 'dashboard' : page;
     setSelectedOrderId('');
     setNavigationHistory([target as Page]);
@@ -268,6 +284,7 @@ function AppContent() {
           <DashboardPage
             onBack={goBack}
             onEditProduct={(product: Product) => { setProductToEdit(product); navigate('edit-product'); }}
+            onOpenOrder={(orderId: string) => { setSelectedOrderId(orderId); navigate('order-status'); }}
           />
         )}
         {activePage === 'sell' && !isBuyer && (
