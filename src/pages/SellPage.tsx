@@ -225,7 +225,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
                       category === cat.id ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-600'
                     }`}>
                     <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
+                    <span>{cat.label}</span>
                   </button>
                 ))}
               </div>

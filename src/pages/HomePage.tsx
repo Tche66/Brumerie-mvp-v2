@@ -126,7 +126,7 @@ export function HomePage({ onProductClick, onProfileClick, onNotificationsClick 
               <button key={cat.id} onClick={() => setSelectedCategory(cat.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl text-[11px] font-bold transition-all ${isActive ? 'bg-slate-900 text-white shadow-lg -translate-y-0.5' : 'bg-slate-50 text-slate-500'}`}>
                 {cat.icon && <span>{cat.icon}</span>}
-                <span className="uppercase tracking-wider">{cat.name}</span>
+                <span className="uppercase tracking-wider">{cat.label}</span>
               </button>
             );
           })}
