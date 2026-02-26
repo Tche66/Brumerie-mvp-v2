@@ -1,5 +1,7 @@
 // src/pages/ProfilePage.tsx
 import { VerifiedTag } from '@/components/VerifiedTag';
+import { subscribeSellerReviews } from '@/services/reviewService';
+import { Review } from '@/types';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/ProductCard';
@@ -23,6 +25,7 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const [bookmarksLoading, setBookmarksLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('active');
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [actionProduct, setActionProduct] = useState<Product | null>(null);
   const [bookmarkIds, setBookmarkIds] = useState<Set<string>>(new Set());
 
@@ -134,6 +137,20 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
             size="md"
           />
         </div>
+        {/* Étoiles résumé */}
+        {(userProfile.rating && userProfile.reviewCount) ? (
+          <div className="flex items-center gap-1.5 mb-3">
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(s => (
+                <svg key={s} width="13" height="13" viewBox="0 0 24 24"
+                  fill={(userProfile.rating || 0) >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              ))}
+            </div>
+            <span className="text-[10px] font-black text-slate-500">{userProfile.rating?.toFixed(1)} ({userProfile.reviewCount} avis)</span>
+          </div>
+        ) : null}
         {memberSince && <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-3">Membre depuis {memberSince}</p>}
 
         {/* Badges boutique/livraison */}

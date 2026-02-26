@@ -1,5 +1,7 @@
 import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState, useEffect } from 'react';
+import { subscribeSellerReviews } from '@/services/reviewService';
+import { Review } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
 import { getUserById } from '@/services/userService';
 import { getSellerProducts } from '@/services/productService';
@@ -19,6 +21,7 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookmarkIds, setBookmarkIds] = useState<Set<string>>(new Set());
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -91,6 +94,20 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
               </div>
 
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-1">{seller.name}</h2>
+              {/* Étoiles résumé dans le hero */}
+              {(seller.rating && seller.reviewCount) ? (
+                <div className="flex items-center gap-1.5 mb-2">
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(s => (
+                      <svg key={s} width="12" height="12" viewBox="0 0 24 24"
+                        fill={(seller.rating || 0) >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-black text-slate-500">{seller.rating?.toFixed(1)} ({seller.reviewCount} avis)</span>
+                </div>
+              ) : null}
               {seller.shopSlogan && (
                 <p className="text-[11px] font-bold mb-2" style={{ color: seller.shopThemeColor || '#16A34A' }}>
                   {seller.shopSlogan}
@@ -139,6 +156,69 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
 
 
           </div>
+
+          {/* ── Avis clients ── */}
+          {(seller.rating || reviews.length > 0) && (
+            <div className="px-6 mb-6">
+              {/* Résumé note */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-4xl font-black text-slate-900">{(seller.rating || 0).toFixed(1)}</p>
+                    <div className="flex gap-0.5 mt-1 justify-center">
+                      {[1,2,3,4,5].map(s => (
+                        <svg key={s} width="14" height="14" viewBox="0 0 24 24"
+                          fill={(seller.rating || 0) >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase">{seller.reviewCount || reviews.length} avis</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-black text-slate-900 text-[12px]">Note globale</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Basée sur les commandes livrées</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Liste des avis */}
+              {reviews.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Derniers avis</p>
+                  {reviews.slice(0, 5).map(review => (
+                    <div key={review.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                          {review.fromUserPhoto
+                            ? <img src={review.fromUserPhoto} alt="" className="w-full h-full object-cover"/>
+                            : <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-sm">
+                                {review.fromUserName?.charAt(0)?.toUpperCase()}
+                              </div>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-black text-slate-900 text-[11px] truncate">{review.fromUserName}</p>
+                          <p className="text-[9px] text-slate-400 truncate">{review.productTitle}</p>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => (
+                            <svg key={s} width="11" height="11" viewBox="0 0 24 24"
+                              fill={review.rating >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment && (
+                        <p className="text-[11px] text-slate-600 italic">"{review.comment}"</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Catalogue */}
           <div className="px-6 space-y-4">

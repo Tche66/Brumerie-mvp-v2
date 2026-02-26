@@ -28,16 +28,38 @@ export function RatingModal({ orderId, productId, productTitle, productImage,
   const active = hover || rating;
   const labels = ['', '😕 Mauvais', '😐 Passable', '🙂 Bien', '😊 Très bien', '🤩 Excellent !'];
 
+  const [success, setSuccess] = useState(false);
+
   const handleSubmit = async () => {
     if (rating === 0) { setError('Choisis au moins 1 étoile'); return; }
     setLoading(true); setError('');
     try {
       await submitReview({ orderId, productId, productTitle, fromUserId, fromUserName,
         fromUserPhoto, toUserId, role, rating, comment: comment.trim() });
-      onDone();
-    } catch (e: any) { setError(e.message || 'Erreur, réessaie.'); }
+      setSuccess(true);
+      setTimeout(() => onDone(), 1800);
+    } catch (e: any) {
+      // Si déjà noté → fermer proprement
+      if ((e.message || '').includes('déjà noté')) {
+        onDone();
+      } else {
+        setError(e.message || 'Erreur, réessaie.');
+      }
+    }
     finally { setLoading(false); }
   };
+
+  if (success) return (
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
+      <div className="bg-white rounded-[2.5rem] p-10 text-center shadow-2xl">
+        <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="#FBBF24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p className="font-black text-slate-900 text-lg uppercase">Avis publié ! ⭐</p>
+        <p className="text-slate-400 text-[11px] mt-2 font-bold">Merci pour ton retour.</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-end justify-center p-4">
