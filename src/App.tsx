@@ -159,7 +159,7 @@ function AppContent() {
 
   const role = userProfile?.role || 'buyer';
   const isBuyer = role === 'buyer';
-  const MAIN_PAGES: Page[] = ['home', 'messages', 'profile', 'order-status', ...(isBuyer ? [] : ['sell' as Page])];
+  const MAIN_PAGES: Page[] = ['home', 'messages', 'profile', 'order-status', 'dashboard', ...(isBuyer ? [] : ['sell' as Page])];
 
   const navigate = (page: Page) => {
     setNavigationHistory(prev => [...prev, page]);

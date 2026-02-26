@@ -23,6 +23,14 @@ const OrderIcon = (active: boolean, color: string) => (
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
   </svg>
 );
+const DashIcon = (active: boolean, color: string) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? color : '#94A3B8'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" fill={active ? color + '30' : 'none'}/>
+    <rect x="14" y="3" width="7" height="7" fill={active ? color + '30' : 'none'}/>
+    <rect x="14" y="14" width="7" height="7" fill={active ? color + '30' : 'none'}/>
+    <rect x="3" y="14" width="7" height="7" fill={active ? color + '30' : 'none'}/>
+  </svg>
+);
 const ProfileIcon = (active: boolean, color: string) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? color : 'none'} stroke={active ? color : '#94A3B8'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -82,13 +90,16 @@ export function BottomNav({ activePage, onNavigate, role = 'seller', unreadMessa
           </button>
         )}
 
-        {/* COMMANDES */}
+        {/* COMMANDES (acheteur) / DASHBOARD (vendeur) */}
         <NavBtn
           id="orders"
-          label={isBuyer ? 'Commandes' : 'Tableau'}
-          active={activePage === 'order-status'}
-          onClick={() => onNavigate('orders')}
-          icon={OrderIcon(activePage === 'order-status', isBuyer ? CB : C)}
+          label={isBuyer ? 'Commandes' : 'Dashboard'}
+          active={isBuyer ? activePage === 'order-status' : activePage === 'dashboard'}
+          onClick={() => onNavigate(isBuyer ? 'orders' : 'tableau')}
+          icon={isBuyer
+            ? OrderIcon(activePage === 'order-status', CB)
+            : DashIcon(activePage === 'dashboard', C)
+          }
         />
 
         {/* PROFIL / BOUTIQUE */}

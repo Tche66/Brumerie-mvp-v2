@@ -39,9 +39,12 @@ export function DashboardPage({ onBack, onUpgrade, onEditProduct }: DashboardPag
 
       {/* Header */}
       <div className="bg-white px-5 py-5 flex items-center gap-4 border-b border-slate-100 sticky top-0 z-10">
-        <button onClick={onBack} className="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 active:scale-90 transition-all">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="#0F0F0F" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
+        <div className="w-11 h-11 flex items-center justify-center rounded-2xl bg-green-50 flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </div>
         <div>
           <h1 className="font-black text-sm uppercase tracking-widest text-slate-900">Tableau de bord</h1>
           <p className="text-[9px] text-slate-400 font-bold mt-0.5">Performance de ta boutique</p>
