@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createOrder, submitProof } from '@/services/orderService';
+import { uploadToCloudinary } from '@/utils/uploadImage';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { Product, MOBILE_PAYMENT_METHODS, PaymentInfo } from '@/types';

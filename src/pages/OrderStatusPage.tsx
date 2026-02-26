@@ -1,12 +1,17 @@
 // src/pages/OrderStatusPage.tsx — Sprint 5 fix : 2 onglets, pas de conflit de rôle
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { uploadToCloudinary } from '@/utils/uploadImage';
 import {
   subscribeToOrder, confirmPaymentReceived, submitProof,
   confirmDelivery, openOrderDispute, getCountdown,
   subscribeOrdersAsBuyer, subscribeOrdersAsSeller, checkExpiredOrders,
 } from '@/services/orderService';
 import { Order, OrderStatus, MOBILE_PAYMENT_METHODS } from '@/types';
+import { RatingModal } from '@/components/RatingModal';
+import { hasReviewed } from '@/services/reviewService';
+import { updateDoc, doc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 
 interface OrderStatusPageProps {
   orderId?: string;
@@ -104,7 +109,8 @@ function ProofUploadInline({ orderId, order }: { orderId: string; order: Order }
     if (!screenshotPreview || !transactionRef.trim()) return;
     setLoading(true);
     try {
-      await submitProof(orderId, { screenshotUrl: screenshotPreview, transactionRef: transactionRef.trim() });
+      const cloudUrl = await uploadToCloudinary(screenshotPreview);
+      await submitProof(orderId, { screenshotUrl: cloudUrl, transactionRef: transactionRef.trim() });
       setDone(true);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -152,6 +158,7 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     const unsub = subscribeToOrder(orderId, (o) => {
@@ -315,7 +322,12 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
         {isBuyer && order.status === 'confirmed' && (
           <div className="space-y-3 pt-2">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avez-vous reçu l'article ?</p>
-            <button onClick={() => act(() => confirmDelivery(orderId))} disabled={loading}
+            <button onClick={() => act(async () => {
+              await confirmDelivery(orderId);
+              // Auto-marquer le produit comme vendu
+              try { await updateDoc(doc(db, 'products', order.productId), { status: 'sold' }); } catch {}
+              setShowRatingModal(true);
+            })} disabled={loading}
               className="w-full py-5 rounded-2xl font-black text-[12px] uppercase tracking-widest text-white shadow-xl shadow-blue-200 active:scale-95 transition-all"
               style={{ background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)' }}>
               {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"/> : "J'ai reçu l'article ✓"}
@@ -346,6 +358,23 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
           </div>
         )}
       </div>
+
+      {/* Modale notation post-livraison */}
+      {showRatingModal && currentUser && order.status === 'delivered' && isBuyer && (
+        <RatingModal
+          orderId={orderId}
+          productId={order.productId}
+          productTitle={order.productTitle}
+          productImage={order.productImage}
+          fromUserId={currentUser.uid}
+          fromUserName={order.buyerName}
+          toUserId={order.sellerId}
+          toUserName={order.sellerName}
+          role="buyer_to_seller"
+          onDone={() => setShowRatingModal(false)}
+          onSkip={() => setShowRatingModal(false)}
+        />
+      )}
 
       {/* Modal signalement */}
       {showDisputeForm && (

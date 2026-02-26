@@ -55,7 +55,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    if (files.length + images.length > 3) { setError('Maximum 3 photos.'); return; }
+    if (files.length + images.length > 5) { setError('Maximum 5 photos.'); return; }
     setError('');
     for (const file of files) {
       const compressed = await compressImage(file);
@@ -154,7 +154,10 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
           <div className="space-y-8 animate-fade-up">
             <div>
               <h3 className="text-2xl font-black text-slate-900">Photos de l'article</h3>
-              <p className="text-slate-400 text-sm mt-2">La première photo sera la couverture. Max 3 photos.</p>
+              {images.length === 1 && (
+                <p className="text-amber-600 text-[10px] font-black uppercase mt-1">⚠️ Ajoute au moins 1 photo de plus</p>
+              )}
+              <p className="text-slate-400 text-sm mt-2">Minimum 2 photos, maximum 5. La première = couverture.</p>
             </div>
             <div className="grid grid-cols-3 gap-3">
               {imagePreviews.map((preview, i) => (
@@ -164,7 +167,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
                   {i === 0 && <div className="absolute bottom-0 inset-x-0 bg-green-600 py-1.5 text-[8px] text-center text-white font-bold uppercase tracking-widest">Principale</div>}
                 </div>
               ))}
-              {images.length < 3 && (
+              {images.length < 5 && (
                 <div onClick={() => galleryRef.current?.click()}
                   className="aspect-[4/5] rounded-[1.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 bg-slate-50 active:scale-95 transition-all cursor-pointer">
                   <span className="text-slate-300 text-3xl font-light">+</span>
@@ -298,7 +301,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
           )}
           <button
             onClick={() => step < 2 ? setStep(step + 1) : handleSubmit()}
-            disabled={loading || (step === 0 && images.length === 0) || (step === 1 && (!title || !price)) || (step === 2 && (!category || selectedCities.length === 0))}
+            disabled={loading || (step === 0 && images.length < 2) || (step === 1 && (!title || !price)) || (step === 2 && (!category || selectedCities.length === 0))}
             className="flex-[2] py-5 rounded-[2rem] bg-green-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-green-100 disabled:opacity-30 transition-all active:scale-95 flex items-center justify-center gap-2">
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -1,147 +1,100 @@
-// src/types.ts
+// src/types.ts — Sprint 7
 
+// ─── QUARTIERS ───────────────────────────────────────────
+export const NEIGHBORHOODS = [
+  'Yopougon','Cocody','Abobo','Adjamé','Plateau','Marcory','Treichville',
+  'Koumassi','Port-Bouët','Attécoubé','Bingerville','Songon','Anyama',
+  'Bassam','Braffedon','Deux-Plateaux','Riviera','Angré','Bonoumin',
+  'Palmeraie','Sogefiha','Williamsville','Gbagba','Avocatier','Biabou',
+  'Locodjro','Selmer','Belleville','Niangon','Sideci','Doukouré',
+  'Wassakara','Sagbé','Ancien Agban','Banco','Baoulé','Belleville-Yop',
+  'Dar-es-Salam','Doukouré Sud','Gesco',
+];
+
+export const CITIES = ['Abidjan','Bouaké','Yamoussoukro','San-Pédro','Korhogo'];
+const MAX_CITIES = 3;
+export { MAX_CITIES };
+
+// ─── CATÉGORIES ──────────────────────────────────────────
+export const CATEGORIES = [
+  { id: 'phones',      label: 'Téléphones',    icon: '📱' },
+  { id: 'fashion',     label: 'Mode',          icon: '👗' },
+  { id: 'electronics', label: 'Électronique',  icon: '💻' },
+  { id: 'beauty',      label: 'Beauté',        icon: '💄' },
+  { id: 'furniture',   label: 'Maison',        icon: '🛋️' },
+  { id: 'food',        label: 'Alimentation',  icon: '🍎' },
+  { id: 'sports',      label: 'Sport',         icon: '⚽' },
+  { id: 'vehicles',    label: 'Véhicules',     icon: '🚗' },
+  { id: 'babies',      label: 'Bébé & Enfant', icon: '🧸' },
+  { id: 'services',    label: 'Services',      icon: '🔧' },
+  { id: 'books',       label: 'Livres',        icon: '📚' },
+  { id: 'other',       label: 'Autre',         icon: '📦' },
+];
+
+// ─── PAIEMENT MOBILE ──────────────────────────────────────
+export const MOBILE_PAYMENT_METHODS = [
+  { id: 'wave',   name: 'Wave',              icon: '🌊', color: '#1BA6F9' },
+  { id: 'om',     name: 'Orange Money',      icon: '🟠', color: '#FF7900' },
+  { id: 'mtn',    name: 'MTN Mobile Money',  icon: '🟡', color: '#FFCC00' },
+  { id: 'moov',   name: 'Moov Money',        icon: '🔵', color: '#0066CC' },
+];
+
+export const BRUMERIE_FEE_PERCENT = 0; // MVP — pas de commission
+
+// ─── USER ─────────────────────────────────────────────────
 export interface User {
   id: string;
-  email: string;
+  uid: string;
   name: string;
-  phone: string;
-  role: 'buyer' | 'seller';
-  neighborhood: string;
+  email: string;
+  phone?: string;
+  neighborhood?: string;
   photoURL?: string;
-  isVerified: boolean;
-  salesCount: number;
-  createdAt: Date;
-  publicationCount: number;
-  publicationLimit: number;
-  lastPublicationReset: Date;
+  role: 'buyer' | 'seller';
+  isVerified?: boolean;
   hasPhysicalShop?: boolean;
   managesDelivery?: boolean;
   bio?: string;
-  // Favoris — stockés directement dans le profil utilisateur
-  bookmarkedProductIds?: string[];
-  // Paiement mobile — coordonnées par défaut
-  defaultPaymentMethods?: PaymentInfo[];
-  // Livraison
-  deliveryPriceSameZone?: number;
-  deliveryPriceOtherZone?: number;
-  // Notation — visible Sprint 5
   rating?: number;
   reviewCount?: number;
-  contactCount?: number; // compteur de contacts (anciennement WhatsApp)
+  contactCount?: number;
+  bookmarkedProductIds: string[];
+  defaultPaymentMethods?: PaymentInfo[];
+  deliveryPriceSameZone?: number;
+  deliveryPriceOtherZone?: number;
+  createdAt?: any;
+  // Sprint 7 — Boutique personnalisable
+  shopThemeColor?: string;   // ex: '#16A34A'
+  shopBanner?: string;       // URL image bannière
+  shopSlogan?: string;       // ex: "La mode à prix imbattable"
 }
+
+// ─── PRODUCT ──────────────────────────────────────────────
+export type ProductStatus = 'active' | 'sold' | 'paused';
 
 export interface Product {
   id: string;
   title: string;
-  price: number;
   description: string;
+  price: number;
   category: string;
   neighborhood: string;
+  neighborhoods?: string[];
   images: string[];
   sellerId: string;
   sellerName: string;
-  sellerPhone: string;
+  sellerPhone?: string;
   sellerPhoto?: string;
-  sellerVerified: boolean;
-  whatsappClickCount: number;
-  status: 'active' | 'sold' | 'deleted';
-  neighborhoods?: string[]; // multi-ville vendeur
-  paymentMethods?: PaymentInfo[]; // Wave/OM/MTN/Moov du vendeur pour ce produit
-  // Notation produit — fondations silencieuses Sprint 4
-  sellerRating?: number;
-  sellerReviewCount?: number;
-  createdAt: Date;
+  sellerVerified?: boolean;
+  status: ProductStatus;
+  whatsappClickCount?: number;
+  bookmarkCount?: number;
+  createdAt?: any;
+  paymentMethods?: PaymentInfo[];
 }
 
-export interface Category {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export const CATEGORIES: Category[] = [
-  { id: 'phones', name: 'Téléphones', icon: '📱' },
-  { id: 'electronics', name: 'Électronique', icon: '💻' },
-  { id: 'fashion', name: 'Mode', icon: '👕' },
-  { id: 'accessories', name: 'Accessoires', icon: '👜' },
-  { id: 'friperie', name: 'Friperie', icon: '🧥' },
-  { id: 'resale', name: 'Revente perso', icon: '🔄' },
-  { id: 'home', name: 'Maison', icon: '🏠' },
-  { id: 'beauty', name: 'Beauté', icon: '💄' },
-  { id: 'sports', name: 'Sport', icon: '⚽' },
-  { id: 'other', name: 'Autre', icon: '📦' },
-];
-
-export const NEIGHBORHOODS = [
-  'Yopougon',
-  'Cocody',
-  'Plateau',
-  'Adjamé',
-  'Abobo',
-  'Marcory',
-  'Koumassi',
-  'Port-Bouët',
-  'Attécoubé',
-  'Treichville',
-  'Bingerville',
-  'Songon',
-  'Anyama',
-  'Dabou',
-  'Grand-Lahou',
-  'Jacqueville',
-  'Williamsville',
-  'Vridi',
-  'Zone 4',
-  'Zone industrielle',
-  'Riviera',
-  'Angré',
-  'Deux Plateaux',
-  'Blockhaus',
-  'Bonoumin',
-  'Palmeraie',
-  'Adiopodoumé',
-  'Niangon',
-  'Selmer',
-  'Locodjoro',
-  'Gbagba',
-  'Toits Rouges',
-  'Siporex',
-  'Wassakara',
-  'Sagbé',
-  'Doukouré',
-  'Anono',
-  'Djibi',
-  'Akouédo',
-  'Banco',
-];
-
-export interface VerificationRequest {
-  id: string;
-  userId: string;
-  userName: string;
-  userPhone: string;
-  userEmail: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: Date;
-  paymentConfirmed: boolean;
-}
-
-export interface Feedback {
-  id: string;
-  userId: string;
-  userName: string;
-  type: 'bug' | 'suggestion' | 'question' | 'complaint';
-  message: string;
-  email: string;
-  createdAt: Date;
-}
-
-export const VERIFICATION_PRICE = 2000;
-export const VERIFICATION_WHATSAPP = '22586867693';
-export const SUPPORT_EMAIL = 'brumerieciv.email@gmail.com';
-export const SUPPORT_WHATSAPP = '22586867693';
-
-// ─── MESSAGERIE ────────────────────────────────────────────
+// ─── MESSAGING ────────────────────────────────────────────
+export type MessageType = 'text' | 'product_card' | 'system';
 
 export interface Message {
   id: string;
@@ -149,101 +102,104 @@ export interface Message {
   senderId: string;
   senderName: string;
   senderPhoto?: string;
-  text: string;
-  type: 'text' | 'product_card' | 'system';
-  // Pour type='product_card' — fiche produit partagée
+  type: MessageType;
+  text?: string;
   productRef?: {
-    id: string;
-    title: string;
-    price: number;
-    image: string;
-    neighborhood: string;
+    id: string; title: string; price: number; image: string; sellerId: string;
   };
-  readBy: string[];       // UIDs qui ont lu
-  createdAt: any;         // Firestore Timestamp
-  reported?: boolean;
+  readBy: string[];
+  createdAt: any;
 }
 
 export interface Conversation {
   id: string;
-  participants: string[];               // [buyerId, sellerId]
-  participantNames: Record<string, string>;
-  participantPhotos: Record<string, string>;
-  productId: string;
-  productTitle: string;
-  productImage: string;
-  productPrice: number;
-  lastMessage: string;
-  lastMessageAt: any;                   // Firestore Timestamp
-  lastSenderId: string;
-  unreadCount: Record<string, number>;  // { uid: count }
+  participants: string[];
+  participantsInfo: Record<string, { name: string; photo?: string; isVerified?: boolean }>;
+  lastMessage?: string;
+  lastMessageAt?: any;
+  lastSenderId?: string;
+  productRef?: { id: string; title: string; price: number; image: string; sellerId: string };
+  unreadCount?: Record<string, number>;
+  createdAt?: any;
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────
+export type NotificationType = 'message' | 'new_favorite' | 'system';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  data?: Record<string, any>;
   createdAt: any;
 }
 
-// ─── PAIEMENT MOBILE CI ────────────────────────────────────
-
-export const BRUMERIE_FEE_PERCENT = 5; // 5% sur montant brut
-
-export const MOBILE_PAYMENT_METHODS = [
-  { id: 'wave',   name: 'Wave',            color: '#1BA7FF', icon: '💙' },
-  { id: 'orange', name: 'Orange Money',    color: '#FF6600', icon: '🧡' },
-  { id: 'mtn',    name: 'MTN Mobile Money',color: '#FFCC00', icon: '💛' },
-  { id: 'moov',   name: 'Moov Money',      color: '#0066CC', icon: '💙' },
-];
-
-export type OrderStatus =
-  | 'initiated'   // acheteur a cliqué "Finaliser" — intention d'achat
-  | 'proof_sent'  // acheteur a uploadé preuve + ID transaction
-  | 'confirmed'   // vendeur a cliqué "J'ai reçu ✓"
-  | 'delivered'   // acheteur a confirmé réception physique
-  | 'disputed'    // litige ouvert — vendeur bloqué
-  | 'cancelled';  // annulé
-
+// ─── PAIEMENT ─────────────────────────────────────────────
 export interface PaymentInfo {
-  method: string;       // 'wave' | 'orange' | 'mtn' | 'moov'
-  phone: string;        // numéro du vendeur pour cet article
-  holderName: string;   // nom du titulaire
+  method: string;
+  phone: string;
+  holderName: string;
+  waveLink?: string;
 }
 
+// ─── COMMANDES ────────────────────────────────────────────
+export type OrderStatus = 'initiated' | 'proof_sent' | 'confirmed' | 'delivered' | 'disputed' | 'cancelled';
+
 export interface OrderProof {
-  screenshotUrl: string;   // Cloudinary URL
-  transactionRef: string;  // ID saisi manuellement
+  screenshotUrl: string;
+  transactionRef: string;
   submittedAt: any;
 }
 
 export interface Order {
   id: string;
-  // ── Parties ─────────────────────────────────────────────
   buyerId: string;
   buyerName: string;
   buyerPhoto?: string;
   sellerId: string;
   sellerName: string;
   sellerPhoto?: string;
-  // ── Produit ─────────────────────────────────────────────
   productId: string;
   productTitle: string;
   productImage: string;
   productPrice: number;
-  // ── Montants ─────────────────────────────────────────────
-  brumerieFee: number;       // 5% → revenu Brumerie
-  sellerReceives: number;    // 95% → vendeur
-  // ── Paiement Mobile ─────────────────────────────────────
-  paymentInfo: PaymentInfo;  // coordonnées paiement vendeur
-  proof?: OrderProof;        // preuve uploadée par l'acheteur
-  // ── Statut & Timers ──────────────────────────────────────
+  deliveryFee: number;
+  totalAmount: number;
+  brumerieFee: number;
+  sellerReceives: number;
+  paymentInfo: PaymentInfo;
+  proof?: OrderProof;
   status: OrderStatus;
-  reminderSentAt?: any;      // rappel 6h envoyé
-  autoDisputeAt?: any;       // deadline 24h → signalement auto
+  deliveryType: 'delivery' | 'in_person';
+  reminderSentAt?: any;
+  autoDisputeAt?: any;
+  proofSentAt?: any;
   disputeReason?: string;
   sellerBlocked?: boolean;
-  // ── Timestamps ───────────────────────────────────────────
+  createdAt?: any;
+  updatedAt?: any;
+  // Sprint 7 — notation
+  buyerReviewed?: boolean;
+  sellerReviewed?: boolean;
+}
+
+// ─── NOTATION Sprint 7 ───────────────────────────────────
+export type RatingRole = 'buyer_to_seller' | 'seller_to_buyer';
+
+export interface Review {
+  id: string;
+  orderId: string;
+  productId: string;
+  productTitle: string;
+  fromUserId: string;
+  fromUserName: string;
+  fromUserPhoto?: string;
+  toUserId: string;
+  role: RatingRole;
+  rating: number;
+  comment: string;
   createdAt: any;
-  proofSentAt?: any;
-  confirmedAt?: any;
-  deliveredAt?: any;
-  disputedAt?: any;
-  cancelledAt?: any;
-  // ── Type de remise ───────────────────────────────────────
-  deliveryType?: 'delivery' | 'in_person'; // livraison ou main propre
 }

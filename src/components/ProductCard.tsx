@@ -1,4 +1,5 @@
 // src/components/ProductCard.tsx
+import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState } from 'react';
 import { Product } from '@/types';
 import { formatPrice } from '@/utils/helpers';
@@ -11,24 +12,7 @@ interface ProductCardProps {
 }
 
 // Badge Vérifié — bleu réseau social
-function VerifiedBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
-  const dim = size === 'sm' ? 13 : 16;
-  return (
-    <div
-      style={{
-        width: dim, height: dim,
-        borderRadius: '50%',
-        background: '#1D9BF0',
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}
-    >
-      <svg width={dim * 0.6} height={dim * 0.6} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4">
-        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-  );
-}
+
 
 export function ProductCard({ product, onClick, onBookmark, isBookmarked = false }: ProductCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -152,7 +136,7 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
             </div>
             <div className="flex items-center gap-1 min-w-0">
               <span className="text-[10px] font-black text-gray-800 truncate">{product.sellerName}</span>
-              {product.sellerVerified && <VerifiedBadge size="sm" />}
+              {product.sellerVerified && <VerifiedTag size="sm" />}
             </div>
           </div>
 

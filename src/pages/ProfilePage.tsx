@@ -1,4 +1,5 @@
 // src/pages/ProfilePage.tsx
+import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/ProductCard';
@@ -11,15 +12,7 @@ interface ProfilePageProps {
   onNavigate?: (page: string) => void;
 }
 
-function VerifiedBadge() {
-  return (
-    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#16A34A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4">
-        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-  );
-}
+
 
 type Tab = 'active' | 'sold' | 'bookmarks';
 
@@ -127,18 +120,17 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
 
       {/* Header profil */}
       <div className="px-6 pt-14 pb-6 flex flex-col items-center">
-        <div className="relative mb-4">
+        <div className="relative mb-4 z-10">
           <div className="w-24 h-24 rounded-[2.6rem] overflow-hidden border-[6px] border-slate-50 shadow-2xl">
             <img src={userProfile.photoURL || `https://ui-avatars.com/api/?name=${userProfile.name}`} alt={userProfile.name} className="w-full h-full object-cover" />
           </div>
-          {userProfile.isVerified && (
-            <div className="absolute -bottom-1 -right-1 border-4 border-white rounded-full shadow-lg">
-              <VerifiedBadge />
-            </div>
-          )}
+
         </div>
 
         <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-1">{userProfile.name}</h1>
+        {userProfile.isVerified && (
+          <div className="mb-2"><VerifiedTag size="md" /></div>
+        )}
         {memberSince && <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-3">Membre depuis {memberSince}</p>}
 
         {/* Badges boutique/livraison */}

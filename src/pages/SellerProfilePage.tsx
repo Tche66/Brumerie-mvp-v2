@@ -1,3 +1,4 @@
+import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { getUserById } from '@/services/userService';
@@ -86,17 +87,18 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
                     </div>
                   )}
                 </div>
-                {seller.isVerified && (
-                  <div className="absolute -bottom-1 -right-1 border-4 border-white rounded-full shadow-lg"
-                    style={{ width: 26, height: 26, background: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4">
-                      <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                )}
+
               </div>
 
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-1">{seller.name}</h2>
+              {seller.shopSlogan && (
+                <p className="text-[11px] font-bold mb-2" style={{ color: seller.shopThemeColor || '#16A34A' }}>
+                  {seller.shopSlogan}
+                </p>
+              )}
+              {seller.isVerified && (
+                <div className="mb-2"><VerifiedTag size="lg" /></div>
+              )}
 
               <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-3 flex-wrap justify-center">
                 {seller.neighborhood && (

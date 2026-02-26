@@ -1,3 +1,4 @@
+import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState, useRef, useEffect } from 'react';
 import { Product } from '@/types';
 import { generateWhatsAppLink, formatPrice, formatRelativeDate } from '@/utils/helpers';
@@ -291,7 +292,7 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
             <div className="flex items-center gap-2 mb-1">
               <span className="font-black text-white text-sm uppercase tracking-tight">{product.sellerName}</span>
               {product.sellerVerified && (
-                <div style={{ width: 18, height: 18, background: '#1D9BF0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 18, height: 18, background: '#16A34A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
               )}

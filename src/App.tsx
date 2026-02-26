@@ -21,6 +21,7 @@ import { ChatPage } from '@/pages/ChatPage';
 import { BottomNav } from '@/components/BottomNav';
 import { Product, Conversation } from '@/types';
 import { NotificationsPage } from '@/pages/NotificationsPage';
+import { ShopCustomizePage } from '@/pages/ShopCustomizePage';
 import { OrderFlowPage } from '@/pages/OrderFlowPage';
 import { OrderStatusPage } from '@/pages/OrderStatusPage';
 import { ToastContainer } from '@/components/ToastNotification';
@@ -32,7 +33,7 @@ type Page =
   | 'product-detail' | 'seller-profile' | 'chat'
   | 'edit-profile' | 'verification' | 'support'
   | 'settings' | 'privacy' | 'terms' | 'about' | 'notifications'
-  | 'order-flow' | 'order-status';
+  | 'order-flow' | 'order-status' | 'shop-customize';
 
 // ── AuthGate ─────────────────────────────────────────────────
 function AuthGate() {
@@ -256,6 +257,9 @@ function AppContent() {
         {activePage === 'privacy' && <PrivacyPage onBack={goBack} />}
         {activePage === 'terms' && <PrivacyPage onBack={goBack} isTerms />}
         {activePage === 'about' && <PrivacyPage onBack={goBack} isAbout />}
+        {activePage === 'shop-customize' && (
+          <ShopCustomizePage onBack={goBack} onSaved={goBack} />
+        )}
         {activePage === 'sell' && !isBuyer && (
           <SellPage onClose={() => handleBottomNavNavigate('home')} onSuccess={() => handleBottomNavNavigate('home')} />
         )}

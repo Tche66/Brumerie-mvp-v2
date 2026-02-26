@@ -1,4 +1,5 @@
 // src/components/Header.tsx — Sprint 6 : Logo | Cloche | Search | Avatar
+import { VerifiedTag } from '@/components/VerifiedTag';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { subscribeUnreadNotifCount } from '@/services/notificationService';
@@ -84,24 +85,19 @@ export function Header({ onProfileClick, onSearchChange, searchTerm = '', onNoti
 
           {/* Avatar — tout à droite après la search */}
           {userProfile && (
+            <div className="flex flex-col items-center flex-shrink-0">
             <button onClick={onProfileClick}
-              className="relative flex-shrink-0 w-9 h-9 rounded-full overflow-hidden border-2 border-green-100 hover:border-green-500 transition-all duration-200 active:scale-90">
+              className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-green-100 hover:border-green-500 transition-all duration-200 active:scale-90">
               {userProfile.photoURL
                 ? <img src={userProfile.photoURL} alt={userProfile.name} className="w-full h-full object-cover"/>
                 : <div className="w-full h-full bg-green-50 flex items-center justify-center">
                     <span className="text-green-600 font-bold text-sm">{userProfile.name?.charAt(0)?.toUpperCase()}</span>
                   </div>
               }
-              {/* Badge vérifié VERT (image 1) */}
-              {userProfile.isVerified && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center"
-                  style={{ background: '#16A34A' }}>
-                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </span>
-              )}
+
             </button>
+            {userProfile.isVerified && <VerifiedTag size="sm" />}
+            </div>
           )}
 
         </div>

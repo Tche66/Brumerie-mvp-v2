@@ -130,7 +130,7 @@ export function SettingsPage({ onBack, onNavigate, role = 'seller' }: SettingsPa
           </div>
           {userProfile?.isVerified && (
             <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg flex-shrink-0"
-              style={{ background: '#1D9BF0', boxShadow: '0 4px 14px rgba(22,163,74,0.3)' }}>
+              style={{ background: '#16A34A', boxShadow: '0 4px 14px rgba(22,163,74,0.3)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
