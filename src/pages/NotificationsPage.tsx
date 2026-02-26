@@ -10,6 +10,7 @@ import { requestPushPermission, isPushGranted } from '@/services/pushService';
 interface NotificationsPageProps {
   onBack: () => void;
   onOpenConversation?: (convId: string) => void;
+  onOpenOrder?: (orderId: string) => void;
 }
 
 function timeAgo(ts: any): string {
@@ -52,7 +53,7 @@ const BG: Record<string, string> = {
   system: 'bg-slate-50',
 };
 
-export function NotificationsPage({ onBack, onOpenConversation }: NotificationsPageProps) {
+export function NotificationsPage({ onBack, onOpenConversation, onOpenOrder }: NotificationsPageProps) {
   const { currentUser } = useAuth();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,8 +77,21 @@ export function NotificationsPage({ onBack, onOpenConversation }: NotificationsP
   const handleNotifClick = async (notif: AppNotification) => {
     if (!currentUser) return;
     if (!notif.read) await markNotificationRead(currentUser.uid, notif.id);
+    // Naviguer vers la commande si orderId dans les données
+    if (notif.data?.orderId && onOpenOrder) {
+      onOpenOrder(notif.data.orderId);
+      return;
+    }
+    // Naviguer vers la conversation si conversationId
     if (notif.data?.conversationId && onOpenConversation) {
       onOpenConversation(notif.data.conversationId);
+      return;
+    }
+    // Naviguer vers les commandes si c'est une notif de commande
+    if (notif.title?.includes('commande') || notif.title?.includes('paiement') ||
+        notif.title?.includes('Livraison') || notif.title?.includes('reçu') ||
+        notif.title?.includes('Litige') || notif.title?.includes('Nouvelle')) {
+      onOpenOrder?.('');
     }
   };
 

@@ -13,7 +13,7 @@ interface ProfilePageProps {
 
 function VerifiedBadge() {
   return (
-    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#1D9BF0', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#16A34A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4">
         <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
@@ -157,21 +157,7 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 w-full">
-          <div className="bg-slate-50 rounded-2xl p-4 text-center border border-slate-100">
-            <p className="price-brumerie text-xl text-slate-900">{activeProducts.length}</p>
-            <p className="text-[9px] font-bold uppercase text-slate-400">Actifs</p>
-          </div>
-          <div className="bg-green-50 rounded-2xl p-4 text-center border border-green-100">
-            <p className="price-brumerie text-xl text-green-700">{soldProducts.length}</p>
-            <p className="text-[9px] font-bold uppercase text-green-600">Vendus</p>
-          </div>
-          <div className="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100">
-            <p className="price-brumerie text-xl text-blue-700">{totalWA}</p>
-            <p className="text-[9px] font-bold uppercase text-blue-600">Contacts</p>
-          </div>
-        </div>
+
       </div>
 
       {/* Tabs 3 onglets */}
@@ -186,7 +172,7 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
         </button>
         <button onClick={() => setActiveTab('bookmarks')}
           className={`flex-1 py-3.5 rounded-2xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${activeTab === 'bookmarks' ? 'text-white shadow-lg' : 'bg-slate-50 text-slate-400'}`}
-          style={activeTab === 'bookmarks' ? { background: '#1D9BF0' } : {}}>
+          style={activeTab === 'bookmarks' ? { background: '#16A34A' } : {}}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill={activeTab === 'bookmarks' ? 'white' : '#94A3B8'} stroke="none">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>

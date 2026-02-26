@@ -265,6 +265,10 @@ function AppContent() {
             onOpenConversation={async (convId) => {
               await handleStartChat(convId);
             }}
+            onOpenOrder={(orderId) => {
+              setSelectedOrderId(orderId);
+              handleBottomNavNavigate('orders');
+            }}
           />
         )}
         {activePage === 'order-flow' && orderFlowProduct && (

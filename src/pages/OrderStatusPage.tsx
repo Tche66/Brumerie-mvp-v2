@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  subscribeToOrder, confirmPaymentReceived,
+  subscribeToOrder, confirmPaymentReceived, submitProof,
   confirmDelivery, openOrderDispute, getCountdown,
   subscribeOrdersAsBuyer, subscribeOrdersAsSeller, checkExpiredOrders,
 } from '@/services/orderService';
@@ -83,6 +83,68 @@ function OrderCard({ order, viewAs, onClick }: {
   );
 }
 
+
+// ── Upload preuve inline (depuis détail commande) ─────────
+function ProofUploadInline({ orderId, order }: { orderId: string; order: Order }) {
+  const [screenshotPreview, setScreenshotPreview] = useState('');
+  const [transactionRef, setTransactionRef] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setScreenshotPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async () => {
+    if (!screenshotPreview || !transactionRef.trim()) return;
+    setLoading(true);
+    try {
+      await submitProof(orderId, { screenshotUrl: screenshotPreview, transactionRef: transactionRef.trim() });
+      setDone(true);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  if (done) return (
+    <div className="bg-green-50 rounded-2xl p-4 border border-green-100 text-center">
+      <p className="font-black text-green-800 text-[12px]">✅ Preuve envoyée ! Le vendeur va confirmer sous 24h.</p>
+    </div>
+  );
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-4">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Envoyer votre preuve de paiement</p>
+      {/* Screenshot */}
+      <button onClick={() => fileRef.current?.click()}
+        className={`w-full rounded-2xl border-2 border-dashed overflow-hidden transition-all ${screenshotPreview ? 'border-green-400' : 'border-slate-200 bg-slate-50'}`}
+        style={{ minHeight: 100 }}>
+        {screenshotPreview
+          ? <img src={screenshotPreview} alt="Preuve" className="w-full object-contain max-h-40"/>
+          : <div className="flex flex-col items-center justify-center py-6 gap-2">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Tap pour uploader le reçu</p>
+            </div>
+        }
+      </button>
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile}/>
+      {/* Transaction ref */}
+      <input type="text" value={transactionRef} onChange={e => setTransactionRef(e.target.value)}
+        placeholder="ID / Référence de transaction"
+        className="w-full px-4 py-3 bg-slate-50 rounded-xl text-[12px] font-mono border-2 border-transparent focus:border-green-500 outline-none tracking-wider"/>
+      <button onClick={handleSubmit} disabled={!screenshotPreview || !transactionRef.trim() || loading}
+        className="w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest text-white shadow-lg shadow-green-200 active:scale-95 transition-all disabled:opacity-40"
+        style={{ background: 'linear-gradient(135deg, #16A34A, #115E2E)' }}>
+        {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"/> : 'Envoyer la preuve →'}
+      </button>
+    </div>
+  );
+}
+
 // ── Détail d'une commande ─────────────────────────────────
 function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void }) {
   const { currentUser } = useAuth();
@@ -91,7 +153,12 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
   const [disputeReason, setDisputeReason] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => subscribeToOrder(orderId, setOrder), [orderId]);
+  useEffect(() => {
+    const unsub = subscribeToOrder(orderId, (o) => {
+      setOrder(o);
+    });
+    return unsub;
+  }, [orderId]);
 
   if (!order || !currentUser) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -225,10 +292,15 @@ function OrderDetail({ orderId, onBack }: { orderId: string; onBack: () => void 
 
         {/* ── ACTIONS ACHETEUR ── */}
         {isBuyer && order.status === 'initiated' && (
-          <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
-            <p className="text-[11px] text-amber-800 font-bold">
-              💳 Effectuez votre paiement {order.paymentInfo?.method && `via ${order.paymentInfo.method}`} puis revenez ici pour uploader votre preuve.
-            </p>
+          <div className="space-y-3 pt-2">
+            <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+              <p className="text-[10px] font-black text-amber-800 uppercase mb-1">En attente de votre preuve</p>
+              <p className="text-[11px] text-amber-800 font-bold">
+                Effectuez le virement {order.paymentInfo?.method && `${order.paymentInfo.method.toUpperCase()}`} au {order.paymentInfo?.phone}, puis uploadez votre preuve ici.
+              </p>
+            </div>
+            {/* Upload preuve inline — évite de perdre la commande si on quitte */}
+            <ProofUploadInline orderId={orderId} order={order} />
           </div>
         )}
 
@@ -330,8 +402,8 @@ export function OrderStatusPage({ orderId, onBack }: OrderStatusPageProps) {
       if (purchasesLoaded && salesLoaded) setLoading(false);
     });
 
-    // Safety timeout
-    const t = setTimeout(() => setLoading(false), 3000);
+    // Safety timeout étendu - Firestore peut être lent
+    const t = setTimeout(() => setLoading(false), 5000);
 
     return () => { unsubBuyer(); unsubSeller(); clearTimeout(t); };
   }, [currentUser]);
@@ -397,7 +469,7 @@ export function OrderStatusPage({ orderId, onBack }: OrderStatusPageProps) {
           </p>
           <p className="text-slate-400 text-[11px]">
             {tab === 'purchases'
-              ? 'Vos achats sur Brumerie apparaîtront ici.'
+              ? 'Vos achats apparaîtront ici. Si vous avez une commande en cours, vérifiez vos notifications.'
               : 'Les commandes reçues apparaîtront ici.'}
           </p>
         </div>

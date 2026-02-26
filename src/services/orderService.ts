@@ -41,18 +41,19 @@ export async function createOrder(params: {
   });
 
   // Notifier le vendeur qu'une commande est initiée
+  const orderId = ref.id;
   await notifyBoth({
     sellerId: params.sellerId,
     sellerMsg: {
       title: `🛍️ Nouvelle commande !`,
       body: `${params.buyerName} veut acheter "${params.productTitle}" — Attendez sa preuve de paiement.`,
-      convData: { productId: params.productId },
+      convData: { orderId, productId: params.productId },
     },
     buyerId: params.buyerId,
     buyerMsg: {
       title: `Commande initiée ✓`,
       body: `Effectuez le paiement sur ${params.paymentInfo.method.toUpperCase()} au ${params.paymentInfo.phone} (${params.paymentInfo.holderName})`,
-      convData: { productId: params.productId },
+      convData: { orderId, productId: params.productId },
     },
   });
 
@@ -87,13 +88,13 @@ export async function submitProof(
     sellerMsg: {
       title: `💰 Vérifiez votre solde ${order.paymentInfo.method} !`,
       body: `${order.buyerName} déclare avoir envoyé ${order.productPrice.toLocaleString('fr-FR')} FCFA. Ref: ${proof.transactionRef}. Confirmez la réception.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
     buyerId: order.buyerId,
     buyerMsg: {
       title: `Preuve envoyée ✓`,
       body: `Le vendeur a été notifié. Il doit confirmer dans les 24h.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
   });
 }
@@ -115,13 +116,13 @@ export async function confirmPaymentReceived(orderId: string): Promise<void> {
     sellerMsg: {
       title: `✅ Paiement confirmé`,
       body: `Vous avez confirmé la réception. Procédez à la livraison de "${order.productTitle}".`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
     buyerId: order.buyerId,
     buyerMsg: {
       title: `🎉 Paiement confirmé !`,
       body: `${order.sellerName} a confirmé la réception. Votre commande "${order.productTitle}" est en cours.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
   });
 }
@@ -142,13 +143,13 @@ export async function confirmDelivery(orderId: string): Promise<void> {
     sellerMsg: {
       title: `📦 Livraison confirmée !`,
       body: `${order.buyerName} a confirmé avoir reçu "${order.productTitle}". Transaction terminée ✓`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
     buyerId: order.buyerId,
     buyerMsg: {
       title: `Transaction terminée ✓`,
       body: `Merci pour votre achat ! Pensez à noter ${order.sellerName}.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
   });
 }
@@ -184,13 +185,13 @@ export async function openOrderDispute(orderId: string, reason: string): Promise
     sellerMsg: {
       title: `⚠️ Litige ouvert`,
       body: `Un litige a été signalé sur "${order.productTitle}". Vos publications sont suspendues. Contactez Brumerie.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
     buyerId: order.buyerId,
     buyerMsg: {
       title: `⚠️ Litige signalé`,
       body: `Votre signalement a été enregistré. L'équipe Brumerie va examiner la situation.`,
-      convData: { productId: order.productId },
+      convData: { orderId, productId: order.productId },
     },
   });
 }
@@ -270,9 +271,20 @@ export function subscribeOrdersAsBuyer(
   userId: string,
   callback: (orders: Order[]) => void,
 ): () => void {
-  const q = query(ordersCol, where('buyerId', '==', userId), orderBy('createdAt', 'desc'));
+  // Pas de orderBy pour éviter l'index composite Firestore
+  const q = query(ordersCol, where('buyerId', '==', userId));
   return onSnapshot(q, snap => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() } as Order)));
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order));
+    // Tri client-side par date décroissante
+    orders.sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
+    callback(orders);
+  }, (err) => {
+    console.error('[subscribeOrdersAsBuyer]', err);
+    callback([]);
   });
 }
 
@@ -280,9 +292,20 @@ export function subscribeOrdersAsSeller(
   userId: string,
   callback: (orders: Order[]) => void,
 ): () => void {
-  const q = query(ordersCol, where('sellerId', '==', userId), orderBy('createdAt', 'desc'));
+  // Pas de orderBy pour éviter l'index composite Firestore
+  const q = query(ordersCol, where('sellerId', '==', userId));
   return onSnapshot(q, snap => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() } as Order)));
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order));
+    // Tri client-side par date décroissante
+    orders.sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
+    callback(orders);
+  }, (err) => {
+    console.error('[subscribeOrdersAsSeller]', err);
+    callback([]);
   });
 }
 
