@@ -14,13 +14,14 @@ import { Product } from '@/types';
 interface ProfilePageProps {
   onProductClick: (product: Product) => void;
   onNavigate?: (page: string) => void;
+  onEditProduct?: (product: Product) => void;
 }
 
 
 
 type Tab = 'active' | 'sold' | 'bookmarks';
 
-export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
+export function ProfilePage({ onProductClick, onNavigate, onEditProduct }: ProfilePageProps) {
   const toggleDarkMode = async () => {
     if (!userProfile?.id) return;
     const next = !userProfile.darkMode;
@@ -267,6 +268,11 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
             <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-6" />
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 text-center mb-6 line-clamp-1">{actionProduct.title}</p>
             <div className="flex flex-col gap-3">
+              {/* ✏️ Modifier l'article */}
+              <button onClick={() => { if (actionProduct) onEditProduct?.(actionProduct); setActionProduct(null); }}
+                className="w-full py-5 rounded-3xl bg-slate-900 text-white font-bold text-xs uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2">
+                ✏️ Modifier l'article
+              </button>
               {actionProduct.status !== 'sold' ? (
                 <button onClick={() => handleMarkAsSold(actionProduct.id)}
                   className="w-full py-5 rounded-3xl bg-green-600 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-green-100 active:scale-95 transition-all">

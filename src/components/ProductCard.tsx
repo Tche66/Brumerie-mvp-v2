@@ -109,13 +109,8 @@ export function ProductCard({ product, onClick, onBookmark, isBookmarked = false
 
       {/* Content */}
       <div className="p-4">
-        {/* Prix - Font Syne unique Brumerie */}
-        <div className="flex items-baseline gap-1">
-          <p className="price-brumerie text-[18px] text-gray-900">
-            {product.price.toLocaleString('fr-FR')}
-          </p>
-          <span className="text-[10px] font-bold text-slate-400 ml-0.5">FCFA</span>
-        </div>
+        {/* Prix avec réduction éventuelle */}
+        <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="sm" />
 
         {/* Titre */}
         <h3 className="text-[11px] font-bold text-gray-500 mt-1 line-clamp-1 uppercase tracking-tight">

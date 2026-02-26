@@ -23,6 +23,7 @@ import { Product, Conversation } from '@/types';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { ShopCustomizePage } from '@/pages/ShopCustomizePage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { EditProductPage } from '@/pages/EditProductPage';
 import { OrderFlowPage } from '@/pages/OrderFlowPage';
 import { OrderStatusPage } from '@/pages/OrderStatusPage';
 import { ToastContainer } from '@/components/ToastNotification';
@@ -34,7 +35,7 @@ type Page =
   | 'product-detail' | 'seller-profile' | 'chat'
   | 'edit-profile' | 'verification' | 'support'
   | 'settings' | 'privacy' | 'terms' | 'about' | 'notifications'
-  | 'order-flow' | 'order-status' | 'shop-customize' | 'dashboard';
+  | 'order-flow' | 'order-status' | 'shop-customize' | 'dashboard' | 'edit-product';
 
 // ── AuthGate ─────────────────────────────────────────────────
 function AuthGate() {
@@ -101,6 +102,7 @@ function AppContent() {
   const { currentUser, userProfile } = useAuth();
   const [activePage, setActivePage] = useState<Page>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedEditProduct, setSelectedEditProduct] = useState<Product | null>(null);
   const [selectedSellerId, setSelectedSellerId] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [orderFlowProduct, setOrderFlowProduct] = useState<any>(null);
@@ -239,6 +241,7 @@ function AppContent() {
             product={selectedProduct} onBack={goBack}
             onSellerClick={handleSellerClick}
             onStartChat={handleStartChat}
+            onProductClick={handleProductClick}
             onBuyClick={(product) => {
               setOrderFlowProduct(product);
               navigate('order-flow');
@@ -252,7 +255,12 @@ function AppContent() {
           <BuyerProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate} />
         )}
         {activePage === 'profile' && !isBuyer && (
-          <ProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate} />
+          <ProfilePage onProductClick={handleProductClick} onNavigate={handleNavigate}
+            onEditProduct={(product) => {
+              setSelectedEditProduct(product);
+              navigate('edit-product');
+            }}
+          />
         )}
         {activePage === 'messages' && (
           <ConversationsListPage onOpenConversation={handleOpenConversation} />

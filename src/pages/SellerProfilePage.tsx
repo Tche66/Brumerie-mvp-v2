@@ -38,6 +38,17 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
     })();
   }, [sellerId]);
 
+  // ⭐ Avis du vendeur — s'abonne quand sellerId est connu
+  useEffect(() => {
+    if (!sellerId) return;
+    const unsub = subscribeSellerReviews(sellerId, (r, avg, cnt) => {
+      setReviews(r);
+      setAvgRating(avg);
+      setReviewCount(cnt);
+    });
+    return unsub;
+  }, [sellerId]);
+
   // ✅ Favoris depuis userProfile
   useEffect(() => {
     const ids = userProfile?.bookmarkedProductIds || [];

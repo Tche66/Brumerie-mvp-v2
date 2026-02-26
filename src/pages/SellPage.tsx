@@ -30,6 +30,7 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   // Multi-ville : jusqu'à 3 quartiers

@@ -11,6 +11,7 @@ import { getOrCreateConversation, checkChatLimit } from '@/services/messagingSer
 import { subscribeSellerReviews } from '@/services/reviewService';
 import { Review } from '@/types';
 import { ProductCard } from '@/components/ProductCard';
+import { PriceDisplay } from '@/components/PriceDisplay';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -230,9 +231,7 @@ export function ProductDetailPage({ product, onBack, onSellerClick, onStartChat,
         {/* Prix + catégorie */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="price-brumerie text-[38px] text-slate-900 leading-none" style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, letterSpacing:'-0.04em' }}>
-              {product.price.toLocaleString('fr-FR')} <span className="text-[20px] text-slate-400 font-bold" style={{ fontFamily:"'DM Sans',sans-serif" }}>FCFA</span>
-            </p>
+            <PriceDisplay price={product.price} originalPrice={product.originalPrice} size="lg" />
             <div className="flex items-center gap-2 mt-2 text-slate-500 font-bold uppercase text-[10px] tracking-widest">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="#94A3B8"><path d="M12 2a8 8 0 00-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 00-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z"/></svg>
               <span>{product.neighborhood}</span>
