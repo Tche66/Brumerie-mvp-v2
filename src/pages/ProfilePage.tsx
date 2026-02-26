@@ -31,6 +31,14 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
 
   useEffect(() => { if (userProfile) loadUserProducts(); }, [userProfile]);
 
+  useEffect(() => {
+    if (!userProfile?.id) return;
+    const unsub = subscribeSellerReviews(userProfile.id, (r, _avg, _cnt) => {
+      setReviews(r);
+    });
+    return unsub;
+  }, [userProfile?.id]);
+
   // ✅ Favoris depuis userProfile — toujours synchronisés
   useEffect(() => {
     const ids = userProfile?.bookmarkedProductIds || [];

@@ -1,4 +1,4 @@
-// src/services/reviewService.ts — Sprint 7
+// src/services/reviewService.ts — Sprint 7 fix
 import {
   collection, addDoc, query, where, getDocs,
   onSnapshot, serverTimestamp, updateDoc, doc,
@@ -33,43 +33,34 @@ export async function submitReview(params: {
     comment: params.comment,
     createdAt: serverTimestamp(),
   };
-  // N'ajouter fromUserPhoto que si défini
   if (params.fromUserPhoto) reviewData.fromUserPhoto = params.fromUserPhoto;
 
   await addDoc(reviewsCol, reviewData);
 
-  // Mettre à jour la moyenne du profil noté (vendeur uniquement pour MVP)
-  if (params.role === 'buyer_to_seller') {
-    await refreshSellerRating(params.toUserId);
-    // Marquer la commande comme notée par l'acheteur
-    await updateDoc(doc(db, 'orders', params.orderId), { buyerReviewed: true });
-  } else {
-    await updateDoc(doc(db, 'orders', params.orderId), { sellerReviewed: true });
-  }
-}
+  // Marquer la commande comme notée
+  try {
+    const orderField = params.role === 'buyer_to_seller' ? 'buyerReviewed' : 'sellerReviewed';
+    await updateDoc(doc(db, 'orders', params.orderId), { [orderField]: true });
+  } catch { /* silencieux */ }
 
-async function refreshSellerRating(userId: string): Promise<void> {
-  const snap = await getDocs(query(reviewsCol,
-    where('toUserId', '==', userId),
-    where('role', '==', 'buyer_to_seller'),
-  ));
-  if (snap.empty) return;
-  const ratings = snap.docs.map(d => d.data().rating as number);
-  const avg = Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10;
-  await updateDoc(doc(db, 'users', userId), { rating: avg, reviewCount: ratings.length });
+  // Mettre à jour la moyenne — seulement si l'utilisateur est le vendeur lui-même
+  // (les règles bloquent l'écriture sur users/{autreId})
+  // La moyenne est recalculée en temps réel via subscribeSellerReviews + calcul côté client
 }
 
 export async function hasReviewed(orderId: string, fromUserId: string): Promise<boolean> {
-  const snap = await getDocs(query(reviewsCol,
-    where('orderId', '==', orderId),
-    where('fromUserId', '==', fromUserId),
-  ));
-  return !snap.empty;
+  try {
+    const snap = await getDocs(query(reviewsCol,
+      where('orderId', '==', orderId),
+      where('fromUserId', '==', fromUserId),
+    ));
+    return !snap.empty;
+  } catch { return false; }
 }
 
 export function subscribeSellerReviews(
   sellerId: string,
-  callback: (reviews: Review[]) => void,
+  callback: (reviews: Review[], avgRating: number, count: number) => void,
 ): () => void {
   const q = query(reviewsCol,
     where('toUserId', '==', sellerId),
@@ -78,6 +69,13 @@ export function subscribeSellerReviews(
   return onSnapshot(q, snap => {
     const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() } as Review));
     reviews.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
-    callback(reviews);
-  }, () => callback([]));
+
+    // Calcul de la moyenne côté client — pas besoin d'écrire dans users/
+    const count = reviews.length;
+    const avg = count > 0
+      ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / count) * 10) / 10
+      : 0;
+
+    callback(reviews, avg, count);
+  }, () => callback([], 0, 0));
 }

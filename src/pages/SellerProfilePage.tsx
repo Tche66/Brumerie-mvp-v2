@@ -22,6 +22,8 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
   const [loading, setLoading] = useState(true);
   const [bookmarkIds, setBookmarkIds] = useState<Set<string>>(new Set());
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -95,17 +97,17 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
 
               <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-1">{seller.name}</h2>
               {/* Étoiles résumé dans le hero */}
-              {(seller.rating && seller.reviewCount) ? (
+              {(avgRating > 0) ? (
                 <div className="flex items-center gap-1.5 mb-2">
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map(s => (
                       <svg key={s} width="12" height="12" viewBox="0 0 24 24"
-                        fill={(seller.rating || 0) >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                        fill={avgRating >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                     ))}
                   </div>
-                  <span className="text-[10px] font-black text-slate-500">{seller.rating?.toFixed(1)} ({seller.reviewCount} avis)</span>
+                  <span className="text-[10px] font-black text-slate-500">{avgRating.toFixed(1)} ({reviewCount} avis)</span>
                 </div>
               ) : null}
               {seller.shopSlogan && (
@@ -158,22 +160,22 @@ export function SellerProfilePage({ sellerId, onBack, onProductClick }: SellerPr
           </div>
 
           {/* ── Avis clients ── */}
-          {(seller.rating || reviews.length > 0) && (
+          {(avgRating > 0 || reviews.length > 0) && (
             <div className="px-6 mb-6">
               {/* Résumé note */}
               <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm mb-4">
                 <div className="flex items-center gap-4">
                   <div className="text-center">
-                    <p className="text-4xl font-black text-slate-900">{(seller.rating || 0).toFixed(1)}</p>
+                    <p className="text-4xl font-black text-slate-900">{avgRating.toFixed(1)}</p>
                     <div className="flex gap-0.5 mt-1 justify-center">
                       {[1,2,3,4,5].map(s => (
                         <svg key={s} width="14" height="14" viewBox="0 0 24 24"
-                          fill={(seller.rating || 0) >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
+                          fill={avgRating >= s ? '#FBBF24' : '#E2E8F0'} stroke="none">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
                       ))}
                     </div>
-                    <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase">{seller.reviewCount || reviews.length} avis</p>
+                    <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase">{reviewCount} avis</p>
                   </div>
                   <div className="flex-1">
                     <p className="font-black text-slate-900 text-[12px]">Note globale</p>
