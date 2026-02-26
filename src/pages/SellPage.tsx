@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createProduct, canUserPublish } from '@/services/productService';
 import { compressImage } from '@/utils/helpers';
-import { CATEGORIES, NEIGHBORHOODS } from '@/types';
+import { CATEGORIES, NEIGHBORHOODS, PLAN_LIMITS } from '@/types';
 
 interface SellPageProps {
   onClose: () => void;
@@ -79,6 +79,14 @@ export function SellPage({ onClose, onSuccess }: SellPageProps) {
   };
 
   const handleSubmit = async () => {
+    // Vérifier limite produits selon le plan
+    const tier = userProfile?.isPremium ? 'premium' : userProfile?.isVerified ? 'verified' : 'simple';
+    const productLimit = PLAN_LIMITS[tier].products;
+    const currentProductCount = userProfile?.productCount || 0;
+    if (currentProductCount >= productLimit) {
+      setError(`Limite de ${productLimit} produits atteinte pour le plan ${tier}. Passe au plan supérieur !`);
+      return;
+    }
     if (!userProfile || !canPublish) return;
     if (selectedCities.length === 0) { setError('Sélectionne au moins une ville.'); return; }
     setLoading(true);

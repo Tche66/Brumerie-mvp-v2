@@ -231,3 +231,15 @@ h1, h2, h3, h4, .font-title {
 }
 
 .settings-gear-btn:active { transform: scale(0.93); background: #F1F5F9; }
+
+/* ── Mode sombre Sprint 8 ── */
+.dark body { background: #0F0F0F !important; color: #F1F5F9 !important; }
+.dark .bg-white { background: #1E1E1E !important; }
+.dark .bg-slate-50 { background: #2A2A2A !important; }
+.dark .bg-slate-100 { background: #333333 !important; }
+.dark .text-slate-900 { color: #F1F5F9 !important; }
+.dark .text-slate-700 { color: #CBD5E1 !important; }
+.dark .text-slate-600 { color: #94A3B8 !important; }
+.dark .text-slate-400 { color: #64748B !important; }
+.dark .border-slate-100 { border-color: #2A2A2A !important; }
+.dark header { background: #1E1E1E !important; border-color: #2A2A2A !important; }

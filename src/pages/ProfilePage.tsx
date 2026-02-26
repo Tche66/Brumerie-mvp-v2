@@ -4,6 +4,8 @@ import { subscribeSellerReviews } from '@/services/reviewService';
 import { Review } from '@/types';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 import { ProductCard } from '@/components/ProductCard';
 import { getSellerProducts, markProductAsSold, deleteProduct, updateProductStatus, getProducts } from '@/services/productService';
 import { addBookmark, removeBookmark } from '@/services/bookmarkService';
@@ -19,6 +21,11 @@ interface ProfilePageProps {
 type Tab = 'active' | 'sold' | 'bookmarks';
 
 export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
+  const toggleDarkMode = async () => {
+    if (!userProfile?.id) return;
+    const next = !userProfile.darkMode;
+    try { await updateDoc(doc(db, 'users', userProfile.id), { darkMode: next }); } catch {}
+  };
   const { userProfile, currentUser, refreshUserProfile } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [bookmarkedProducts, setBookmarkedProducts] = useState<Product[]>([]);
@@ -122,6 +129,11 @@ export function ProfilePage({ onProductClick, onNavigate }: ProfilePageProps) {
     <div className="min-h-screen bg-white page-container pb-24">
 
       {/* Bouton Paramètres */}
+      {/* Mode sombre toggle */}
+      <button onClick={toggleDarkMode} title="Mode sombre"
+        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-100 active:scale-90 transition-all mr-2 fixed top-4 left-4 z-50">
+        {userProfile?.darkMode ? '☀️' : '🌙'}
+      </button>
       <button onClick={() => onNavigate?.('settings')} className="settings-gear-btn" title="Paramètres">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="3"/>

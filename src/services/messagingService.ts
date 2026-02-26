@@ -5,6 +5,8 @@ import {
   arrayUnion, increment, writeBatch, limit,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { PLAN_LIMITS } from '@/types';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Conversation, Message } from '@/types';
 import { createNotification } from './notificationService';
 import { showLocalPushNotification } from './pushService';
@@ -12,6 +14,31 @@ import { showLocalPushNotification } from './pushService';
 const convsCol = collection(db, 'conversations');
 
 // ── Trouver ou créer une conversation ──────────────────────
+export async function checkChatLimit(userId: string): Promise<{ allowed: boolean; reason?: string }> {
+  try {
+    const userSnap = await getDoc(doc(db, 'users', userId));
+    if (!userSnap.exists()) return { allowed: true };
+    const user = userSnap.data();
+    const tier = user.isPremium ? 'premium' : user.isVerified ? 'verified' : 'simple';
+    const limit = PLAN_LIMITS[tier].dailyChats;
+    if (limit >= 999) return { allowed: true };
+
+    // Reset si nouveau jour
+    const today = new Date().toDateString();
+    if (user.lastChatReset !== today) {
+      await updateDoc(doc(db, 'users', userId), { dailyChatCount: 0, lastChatReset: today });
+      return { allowed: true };
+    }
+    const count = user.dailyChatCount || 0;
+    if (count >= limit) {
+      return { allowed: false, reason: `Limite de ${limit} chats/jour atteinte. Passe au plan Vérifié pour chatter sans limite.` };
+    }
+    // Incrémenter
+    await updateDoc(doc(db, 'users', userId), { dailyChatCount: count + 1 });
+    return { allowed: true };
+  } catch { return { allowed: true }; }
+}
+
 export async function getOrCreateConversation(
   buyerId: string,
   sellerId: string,

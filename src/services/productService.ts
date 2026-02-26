@@ -50,8 +50,10 @@ export async function createProduct(
       ...productData,
       images: imageUrls,
       whatsappClickCount: 0,
-      status: 'active' as const, // Statut initial
+      viewCount: 0,
+      status: 'active' as const,
       createdAt: serverTimestamp(),
+      priceHistory: [{ price: productData.price, date: new Date().toISOString() }],
     };
 
     const docRef = await addDoc(collection(db, 'products'), product);

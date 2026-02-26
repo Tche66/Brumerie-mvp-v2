@@ -22,6 +22,7 @@ import { BottomNav } from '@/components/BottomNav';
 import { Product, Conversation } from '@/types';
 import { NotificationsPage } from '@/pages/NotificationsPage';
 import { ShopCustomizePage } from '@/pages/ShopCustomizePage';
+import { DashboardPage } from '@/pages/DashboardPage';
 import { OrderFlowPage } from '@/pages/OrderFlowPage';
 import { OrderStatusPage } from '@/pages/OrderStatusPage';
 import { ToastContainer } from '@/components/ToastNotification';
@@ -33,7 +34,7 @@ type Page =
   | 'product-detail' | 'seller-profile' | 'chat'
   | 'edit-profile' | 'verification' | 'support'
   | 'settings' | 'privacy' | 'terms' | 'about' | 'notifications'
-  | 'order-flow' | 'order-status' | 'shop-customize';
+  | 'order-flow' | 'order-status' | 'shop-customize' | 'dashboard';
 
 // ── AuthGate ─────────────────────────────────────────────────
 function AuthGate() {
@@ -112,6 +113,15 @@ function AppContent() {
 
   useEffect(() => { window.scrollTo(0, 0); }, [activePage, selectedProduct]);
 
+  // Mode sombre — appliqué au document selon préférence utilisateur
+  useEffect(() => {
+    if (userProfile?.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [userProfile?.darkMode]);
+
   // Abonnement total messages non-lus → badge BottomNav
   useEffect(() => {
     if (!currentUser) return;
@@ -176,7 +186,7 @@ function AppContent() {
   const handleBottomNavNavigate = (page: string) => {
     setSelectedProduct(null); setSelectedSellerId(null); setSelectedConversation(null);
     // 'orders' dans le BottomNav → 'order-status'
-    const target = page === 'orders' ? 'order-status' : page;
+    const target = page === 'orders' ? 'order-status' : page === 'tableau' ? 'dashboard' : page;
     setSelectedOrderId('');
     setNavigationHistory([target as Page]);
     setActivePage(target as Page);
